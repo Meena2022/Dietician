@@ -3,20 +3,24 @@ from flask_restful import Resource
 import controller as dynamodb
 import key_constants as PREFIX
 
-
 class MorbidityApi(Resource):
-    def get(self):
-        if request.args.__contains__('MorbidityName'):
-            key = 'MorbidityName'
+    def get(self,morbidityName=None,morbidityTestId=None):
+        projectionexp = 'MorbidityName,MorbidityTestId,MorbidityTestName,MorbidityMarkerRef,MorbidityTestUnit'
+        if morbidityName.__ne__(None) :
+            pk_value = PREFIX.MORBIDITY_PK_PREFIX + morbidityName
+            response = dynamodb.read_using_PK(pk_value,projectionexp)
+        elif request.args.__contains__('MorbidityName'):
             value = request.args.get('MorbidityName')
-            print(key, value)
-        if request.args.__contains__('MorbidityTestId'):
-            key = 'MorbidityTestId'
+            pk_value = PREFIX.MORBIDITY_PK_PREFIX + str(value)
+            response = dynamodb.read_using_PK(pk_value,projectionexp)
+        elif morbidityTestId.__ne__(None):
+            response = dynamodb.read_attr_that_contains_value('MorbidityTestId',morbidityTestId, projectionexp)
+        elif request.args.__contains__('MorbidityTestId'):
             value = request.args.get('MorbidityTestId')
+            response = dynamodb.read_attr_that_contains_value('MorbidityTestId',value, projectionexp)
         else:
-            key = 'None'
-            value = 'None'
-        response = dynamodb.read_morbidity(key, value)
+            response = dynamodb.read_all('InfoType','Morbidity',projectionexp)
+
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             if 'Items' in response:
                 return {'Items': response['Items']}
@@ -76,5 +80,7 @@ class MorbidityApi(Resource):
             'Message': 'error occurred',
             'response': response
         }
+
+
 
 
