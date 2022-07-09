@@ -25,6 +25,27 @@ DietTable = resource.Table('DietProject_Table')
 """
 COMMON METHODS
 """
+def read_all(filterexp,filterexpval,projectionexp):
+    response = DietTable.scan(
+        FilterExpression=Key(filterexp).eq(filterexpval),
+        ProjectionExpression=projectionexp
+    )
+    return response
+
+def read_attr_that_contains_value(filterexp,filterexpval,projectionexp):
+    response = DietTable.scan(
+        FilterExpression=Attr(filterexp).contains(filterexpval),
+        ProjectionExpression=projectionexp
+    )
+    return response
+
+def read_using_PK(pk_value,projectionexp):
+    response = DietTable.query(
+        KeyConditionExpression=Key('PK').eq(pk_value),
+        ProjectionExpression=projectionexp
+    )
+    return response
+
 
 def generate_user_id():
     pass
@@ -41,32 +62,6 @@ def generate_test_id(morbidity_name, test_name):
 """
 MORBIDITY API - FUNCTIONS
 """
-
-def read_morbidity(key, value):
-    projected_field = 'MorbidityName,MorbidityTestId,MorbidityTestName,MorbidityMarkerRef,MorbidityTestUnit'
-    if key.__eq__('None') and value.__eq__('None'):
-        response = DietTable.scan(
-            FilterExpression=Attr('InfoType').eq('Morbidity'),
-            ProjectionExpression=projected_field
-        )
-        return response
-    elif not key.__eq__('None') and not value.__eq__('None'):
-
-        if key.__eq__('MorbidityName'):
-            pk_value = PREFIX.MORBIDITY_PK_PREFIX + str(value)
-            response = DietTable.query(
-                KeyConditionExpression=Key('PK').eq(pk_value),
-                ProjectionExpression=projected_field
-            )
-            return response
-        if key.__eq__('MorbidityTestId'):
-
-            response = DietTable.scan(
-                FilterExpression=Attr('MorbidityTestId').eq(value),
-                ProjectionExpression=projected_field
-            )
-            return response
-
 
 def write_morbidity(auto_test_id, data: dict):
     print(data)
