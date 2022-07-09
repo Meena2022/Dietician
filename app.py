@@ -14,7 +14,7 @@ api.add_resource(morbidity.MorbidityApi,
                      '/morbidity'
                      )
 
-#api.add_resource(users.UsersApi, '/users')
+api.add_resource(users.UsersApi, '/users')
 #api.add_resource(recipe.RecipeApi, '/recipes')
 
 if __name__ == '__main__':
