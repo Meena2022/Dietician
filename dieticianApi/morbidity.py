@@ -2,6 +2,8 @@ from flask import request
 from flask_restful import Resource
 import controller as dynamodb
 import key_constants as PREFIX
+import commonFunc as PRE_REQUISITE
+
 
 class MorbidityApi(Resource):
     def get(self,morbidityName=None,morbidityTestId=None):
@@ -33,52 +35,63 @@ class MorbidityApi(Resource):
     def post(self):
         data['MorbidityName'],data['MorbidityTestName'],data['MorbidityMarkerRef'],data[MorbidityTestUnit]
         data = request.get_json()
-        auto_test_id = PREFIX.generate_test_id(data['MorbidityName'], data['MorbidityTestName'])
-        response = dynamodb.write_morbidity(data)
-        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+        status_flag = PRE_REQUISITE.validate_request_body(data, 'morbidity')  # Coding not completed
+        print('Status :', status_flag)
+        if len(status_flag) == 0:
+            auto_test_id = PRE_REQUISITE.generate_test_id(data['MorbidityName'], data['MorbidityTestName'])
+            print('id :', auto_test_id)
+            response = dynamodb.write_morbidity(auto_test_id,data)
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return {
+                    'MorbidityTestId': auto_test_id,
+                    'Message': 'Morbidity successful created.'
+                }
             return {
-                'MorbidityTestId': auto_test_id,
-                'Message': 'Morbidity successful created.'
+                    'Message': 'error occurred',
+                    'response': response
+                }
+        return{
+                'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
             }
-        return {
-            'Message': 'error occurred',
-            'response': response
-        }
 
     def put(self):
         data = request.get_json()
-        if request.args.__contains__('MorbidityName'):
-            morbidity_name = request.args.get('MorbidityName')
-        if request.args.__contains__('MorbidityTestId'):
-            test_id = request.args.get('MorbidityTestId')
-        else:
-            morbidity_name = 'None'
-            test_id = 'None'
-        response = dynamodb.update_morbidity(morbidity_name, test_id, data)
-        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+        morbidity_name = request.args.get('MorbidityName')
+        test_id = request.args.get('MorbidityTestId')
+        print('nane :', morbidity_name, test_id)
+        if isinstance(morbidity_name, type(None)) == False and isinstance(test_id, type(None)) == False:
+            response = dynamodb.update_morbidity(morbidity_name, test_id, data)
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return {
+                    'Message': 'update successful',
+                    'ModifiedAttributes': response['Attributes']
+                }
             return {
-                'Message': 'update successful',
-                'ModifiedAttributes': response['Attributes']
+                'Message': 'error occurred',
+                'response': response
             }
-        return {
-            'Message': 'errooccurred',
-            'response': response
+        return{
+            'Message': 'Missing request params - MorbidityName and MorbidityTestId.'
         }
 
     def delete(self):
         morbidity_name = request.args.get('MorbidityName')
         test_id = request.args.get('MorbidityTestId')
-        print('nane :' + request.args.get('MorbidityName'), test_id)
-        response = dynamodb.delete_morbidity(morbidity_name, test_id)
-        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+        print('nane :' , morbidity_name, test_id)
+        if isinstance(morbidity_name, type(None)) == False and isinstance(test_id, type(None)) == False:
+            response = dynamodb.delete_morbidity(morbidity_name, test_id)
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return {
+                    'MorbidityName': morbidity_name,
+                    'MorbidityTestId': test_id,
+                    'Message': 'Test successful deleted.'
+                }
             return {
-                # 'MorbidityName': morbidity_name,
-                # 'MorbidityTestId': test_id,
-                'Message': 'Test successful deleted.'
+                'Message': 'error occurred',
+                'response': response
             }
-        return {
-            'Message': 'error occurred',
-            'response': response
+        return{
+            'Message': 'Missing request params - MorbidityName and MorbidityTestId.'
         }
 
 

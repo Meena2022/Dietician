@@ -22,7 +22,6 @@ api.add_resource(recipe.RecipeApi,
                     '/Recipes'
                      )
 
-#api.add_resource(users.UsersApi, '/users')
-
+api.add_resource(users.UsersApi, '/users')
 if __name__ == '__main__':
     app.run(debug=True)
