@@ -31,7 +31,7 @@ class MorbidityApi(Resource):
         }
 
     def post(self):
-        # data['MorbidityName'],data['MorbidityTestName'],data['MorbidityMarkerRef'],data[MorbidityTestUnit]
+        data['MorbidityName'],data['MorbidityTestName'],data['MorbidityMarkerRef'],data[MorbidityTestUnit]
         data = request.get_json()
         auto_test_id = PREFIX.generate_test_id(data['MorbidityName'], data['MorbidityTestName'])
         response = dynamodb.write_morbidity(data)
