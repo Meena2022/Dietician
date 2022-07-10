@@ -1,6 +1,9 @@
+import decimal
 from datetime import datetime
 from boto3 import resource
 from boto3.dynamodb.conditions import Key, Attr
+from urllib3.connectionpool import xrange
+
 import config
 import key_constants as PREFIX
 import random
@@ -26,6 +29,7 @@ now = datetime.now().__str__()
 """
 COMMON METHODS
 """
+
 def read_all(filterexp,filterexpval,projectionexp):
     response = DietTable.scan(
         FilterExpression=Key(filterexp).eq(filterexpval),
@@ -190,14 +194,19 @@ def delete_user(dietician_id, user_id):
     )
     return response
 
-
-def read_all_recipes():
-    pass
-
- # read_by_recipeName():
-
-# read_by_recipeType():
-
-# read_by_recipeNutrient():
-# read_by_recipeIngrediant():
-# read_by_recipeFoodcategory():
+def replace_decimals(obj):
+    if isinstance(obj, list):
+        for i in xrange(len(obj)):
+            obj[i] = replace_decimals(obj[i])
+        return obj
+    elif isinstance(obj, dict):
+        for k in obj:
+            obj[k] = replace_decimals(obj[k])
+        return obj
+    elif isinstance(obj, decimal.Decimal):
+        if obj % 1 == 0:
+            return int(obj)
+        else:
+            return float(obj)
+    else:
+        return obj

@@ -33,7 +33,7 @@ class MorbidityApi(Resource):
         }
 
     def post(self):
-        # data['MorbidityName'],data['MorbidityTestName'],data['MorbidityMarkerRef'],data[MorbidityTestUnit]
+        data['MorbidityName'],data['MorbidityTestName'],data['MorbidityMarkerRef'],data[MorbidityTestUnit]
         data = request.get_json()
         status_flag = PRE_REQUISITE.validate_request_body(data, 'morbidity')  # Coding not completed
         print('Status :', status_flag)
