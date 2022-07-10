@@ -21,7 +21,14 @@ api.add_resource(recipe.RecipeApi,
                     '/Recipes/RecipeNutrient=<recipeNutrient>',
                     '/Recipes'
                      )
+api.add_resource(users.UsersApi,
+                 '/users/FirstName=<FirstName>',
+                 '/users/Email=<Email>',
+                 '/users/Contact=<Contact>',
+                 '/users/UserType=<UserType>',
+                 '/users/DieticianId=<DieticianId>',
+                 '/users'
+                 )
 
-api.add_resource(users.UsersApi, '/users')
 if __name__ == '__main__':
     app.run(debug=True)
