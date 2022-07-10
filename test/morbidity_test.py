@@ -1,4 +1,3 @@
-"""
 import pytest
 import requests
 
@@ -7,7 +6,7 @@ MORBIDITY_URL = "{}morbidity".format(BASEURL)
 
 
 def test_1_get_allmorbidity():
-    equests.get(MORBIDITY_URL)
+    r=requests.get(MORBIDITY_URL)
     assert r.status_code, 200
 
 """
@@ -20,4 +19,4 @@ def test_3_post_morbidity():
 
 
 def test_4_put_morbidity():
-    pass
+    pass"""

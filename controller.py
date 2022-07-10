@@ -3,6 +3,7 @@ from boto3 import resource
 from boto3.dynamodb.conditions import Key, Attr
 import config
 import key_constants as PREFIX
+import random
 
 
 AWS_ACCESS_KEY_ID = config.AWS_ACCESS_KEY_ID
@@ -20,7 +21,7 @@ resource = resource(
 )
 
 DietTable = resource.Table('DietProject_Table')
-
+now = datetime.now().__str__()
 
 """
 COMMON METHODS
@@ -47,35 +48,22 @@ def read_using_PK(pk_value,projectionexp):
     return response
 
 
-def generate_user_id():
-    pass
-
-
-def generate_recipe_id():
-    pass
-
-def generate_test_id(morbidity_name, test_name):
-    test_id = morbidity_name[0:3] + '_' + test_name[0:3]
-    return test_id.upper()
-
 
 """
 MORBIDITY API - FUNCTIONS
 """
 
 def write_morbidity(auto_test_id, data: dict):
-    print(data)
-    now = datetime.now().__str__()
     response = DietTable.put_item(
         Item={
             'PK': PREFIX.MORBIDITY_PK_PREFIX + data['MorbidityName'],
-            'SK': PREFIX.MORBIDITY_SK_PREFIX + data['MorbidityTestName'],
-            'InfoType': PREFIX.MORBIDITY_INFO,
+            'SK': PREFIX.MORBIDITY_SK_PREFIX + auto_test_id,
+            'InfoType': PREFIX.INFO_TYPE['MORBIDITY'],
             'MorbidityName': data['MorbidityName'],
             'MorbidityTestId': auto_test_id,
             'MorbidityTestName': data['MorbidityTestName'],
             'MorbidityMarkerRef': data['MorbidityMarkerRef'],
-            'MorbidityTestunit': data['MorbidityTestunit'],
+            'MorbidityTestUnit': data['MorbidityTestUnit'],
             'Createdon': now,
             'Modifiedon': now
         }
@@ -90,10 +78,10 @@ def update_morbidity(morbidity_name, test_id, data: dict):
             'PK': PREFIX.MORBIDITY_PK_PREFIX+morbidity_name,
             'SK': PREFIX.MORBIDITY_SK_PREFIX+test_id
         },
-        UpdateExpression='SET MorbidityMarkerRef = :MorbidityMarkerRef, MorbidityTestunit = :MorbidityTestunit',
+        UpdateExpression='SET MorbidityMarkerRef = :MorbidityMarkerRef, MorbidityTestUnit = :MorbidityTestUnit',
         ExpressionAttributeValues={
             ':MorbidityMarkerRef': data['MorbidityMarkerRef'],
-            ':MorbidityTestunit': data['MorbidityTestunit']
+            ':MorbidityTestUnit': data['MorbidityTestUnit']
         },
         ReturnValues="UPDATED_NEW"  # returns the new updated values
     )
@@ -144,15 +132,63 @@ def read_by_email(mail_id):
 
 
 def write_user(auto_user_id,data):
-    pass
+    response = DietTable.put_item(
+        Item={
+            'PK': PREFIX.USER_PREFIX['PK'] + data['DieticianId'],
+            'SK': PREFIX.USER_PREFIX['SK'] + auto_user_id,
+            'InfoType': PREFIX.INFO_TYPE['USER'],
+            'UserId': auto_user_id,
+            'UserType': data['UserType'],
+            'FirstName': data['FirstName'],
+            'LastName': data['FirstName'],
+            'Address': data['Address'],
+            'Contact': data['Contact'],
+            'Email': data['Email'],
+            'Allergy': data['Allergy'],
+            'FoodCategory': data['FoodCategory'],
+            'DieticianId': data['DieticianId'],
+            'LoginUsername': data['LoginUsername'],
+            'Password': data['Password'],
+            'Createdon': now,
+            'Modifiedon': now
+        }
+    )
+    return response
 
 
-def update_user():
-    pass
+def update_user(dietician_id, user_id, data: dict):
+    print(PREFIX.USER_PREFIX['PK']+ dietician_id, PREFIX.USER_PREFIX['SK'] + user_id)
+    response = DietTable.update_item(
+        Key={
+            'PK': PREFIX.USER_PREFIX['PK'] + dietician_id,
+            'SK': PREFIX.USER_PREFIX['SK'] + user_id
+        },
+        UpdateExpression='SET FirstName = :FirstName, LastName = :LastName,Address = :Address,Contact = :Contact,'
+                         'Email = :Email,Allergy = :Allergy,FoodCategory= :FoodCategory,Modifiedon = :Modifiedon',
+        ExpressionAttributeValues={
+            ':FirstName': data['FirstName'],
+            ':LastName': data['LastName'],
+            ':Address': data['Address'],
+            ':Contact': data['Contact'],
+            ':Email': data['Email'],
+            ':Allergy': data['Allergy'],
+            ':FoodCategory': data['FoodCategory'],
+            ':Modifiedon': now
+        },
+        ReturnValues="UPDATED_NEW"  # returns the new updated values
+    )
+    return response
 
 
-def delete_user():
-    pass
+def delete_user(dietician_id, user_id):
+    print(PREFIX.USER_PREFIX['PK'] + dietician_id, PREFIX.USER_PREFIX['SK'] + user_id)
+    response = DietTable.delete_item(
+        Key={
+            'PK': PREFIX.USER_PREFIX['PK'] + dietician_id,
+            'SK': PREFIX.USER_PREFIX['SK'] + user_id
+        }
+    )
+    return response
 
 
 def read_all_recipes():
