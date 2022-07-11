@@ -8,14 +8,27 @@ app = Flask(__name__)
 api = Api(app)
 
 api.add_resource(morbidity.MorbidityApi,
-                     '/morbidity/MorbidityName=<morbidityName>',
-                     '/morbidity/MorbidityTestId=<morbidityTestId>',
-                     '/morbidity/MorbidityName=<morbidityName>&MorbidityTestId=<morbidityTestId>',
-                     '/morbidity'
+                     '/Morbidity/MorbidityName=<morbidityName>',
+                     '/Morbidity/MorbidityTestId=<morbidityTestId>',
+                     '/Morbidity/MorbidityName=<morbidityName>&MorbidityTestId=<morbidityTestId>',
+                     '/Morbidity'
                      )
 
-api.add_resource(users.UsersApi, '/users')
-#api.add_resource(recipe.RecipeApi, '/recipes')
+api.add_resource(recipe.RecipeApi,
+                    '/Recipes/RecipeFoodCategory=<recipeFoodCategory>',
+                    '/Recipes/RecipeType=<recipeType>',
+                    '/Recipes/RecipeIngredient=<recipeIngredient>',
+                    '/Recipes/RecipeNutrient=<recipeNutrient>',
+                    '/Recipes'
+                     )
+api.add_resource(users.UsersApi,
+                 '/users/FirstName=<FirstName>',
+                 '/users/Email=<Email>',
+                 '/users/Contact=<Contact>',
+                 '/users/UserType=<UserType>',
+                 '/users/DieticianId=<DieticianId>',
+                 '/users'
+                 )
 
 if __name__ == '__main__':
     app.run(debug=True)
