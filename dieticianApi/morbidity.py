@@ -64,7 +64,6 @@ class MorbidityApi(Resource):
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return {
                     'Message': 'update successful',
-                    'ModifiedAttributes': response['Attributes']
                 }
             return {
                 'Message': 'error occurred',
