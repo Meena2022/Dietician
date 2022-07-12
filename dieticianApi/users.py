@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, jsonify
 from flask_restful import Resource
 import controller as dynamodb
 import commonFunc as PRE_REQUISITE
@@ -45,67 +45,72 @@ class UsersApi(Resource):
         }
 
     def post(self):
-        # data['InfoType'],data['UserId'],data['FirstName'],data['LastName'],data['Address'],data['Contact']
-        # data['Email'],data['Allergy'],data['FoodCategory'],data['DieticianId'],data['LoginUsername'],data['Password']
         data = request.get_json()
-        status_flag  = PRE_REQUISITE.validate_request_body(data,'user')  # Coding not completed
-        print ('Status :',status_flag)
-        if len(status_flag)==0:
-            auto_user_id = PRE_REQUISITE.generate_user_id(data['UserType'])
-            if data['UserType']=='Dietician': data['DieticianId']=auto_user_id
-            if bool(auto_user_id):
-                response = dynamodb.write_user(auto_user_id, data)
+        if dynamodb.check_user_duplication(data['FirstName'],data['Contact'],data['Email']) == 0:
+            status_flag  = PRE_REQUISITE.validate_request_body(data, 'user_post')  # Coding  completed
+            if len(status_flag) == 0:
+                auto_user_id = PRE_REQUISITE.generate_user_id(data['UserType'])  # Coding  Completed
+                if bool(auto_user_id):
+                    if data['UserType'] == 'Dietician': data['DieticianId'] = auto_user_id
+                    response = dynamodb.write_user(auto_user_id, data)
+                    if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                        return {
+                                'UserId': auto_user_id,
+                                'Message': 'User successful created.'
+                        }
+                    return {
+                        'Message': 'error occurred',
+                        'response': response
+                    }
+            return {
+                    'Message': 'Missing Items OR Invalid Entry. Check on ' + str(status_flag)
+                  }
+        return{
+            'Message': 'User detail already Exists. Check on [ Firstname, Contact , Email ]'
+        }
+
+    def put(self):
+        data = request.get_json()
+        dietician_id = request.args.get('DieticianId')
+        user_id = request.args.get('UserId')
+        status_flag = PRE_REQUISITE.validate_request_body(data, 'user_put')   # Coding not completed
+        if len(status_flag) == 0:
+            if isinstance(dietician_id, type(None)) == False and isinstance(user_id, type(None)) == False:
+                response = dynamodb.update_user(dietician_id, user_id, data)
                 if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                     return {
-                        'UserId': auto_user_id,
-                        'Message': 'User successful created.'
+                        'Message': 'User updated successful',
+                        'ModifiedAttributes': response['Attributes']
                     }
                 return {
                     'Message': 'error occurred',
                     'response': response
                 }
-        return {
-                'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
-              }
-
-
-    def put(self):
-        # data['FirstName'],data['LastName'],data['Address'],data['Contact'],data['Email'],data['Allergy'],data['FoodCategory']
-        data = request.get_json()
-        dietician_id = request.args.get('DieticianId')
-        user_id = request.args.get('UserId')
-        if isinstance(dietician_id, type(None))==False  and isinstance(user_id, type(None))==False:
-            response = dynamodb.update_user(dietician_id, user_id, data)
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return {
-                    'Message': 'User updated successful',
-                    'ModifiedAttributes': response['Attributes']
-                }
             return {
-                'Message': 'error occurred',
-                'response': response
-            }
+                    'Message': 'Missing request params - DiceticianId and UserId.'
+                }
         return {
-                'Message': 'Missing request params - DiceticianId and UserId.'
-            }
+            'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
+        }
 
     def delete(self):
-        #delete_user
         dietician_id = request.args.get('DieticianId')
         user_id = request.args.get('UserId')
-        print (isinstance(dietician_id, type(None)),isinstance(user_id, type(None)))
         if isinstance(dietician_id, type(None)) == False and isinstance(user_id, type(None)) == False:
-            print(dietician_id, user_id)
-            response = dynamodb.delete_user(dietician_id, user_id)
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            if dynamodb.check_user_availability(dietician_id, user_id) > 0:
+                response = dynamodb.delete_user(dietician_id, user_id)
+                if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                    return {
+                        'DieticianId': dietician_id,
+                        'UserId': user_id,
+                        'Message': 'User successful deleted.'
+                    }
                 return {
-                    'DieticianId': dietician_id,
-                    'UserId': user_id,
-                    'Message': 'User successful deleted.'
+                    'Message': 'error occurred',
+                    'response': response
                 }
-            return {
-                'Message': 'error occurred',
-                'response': response
+            return{
+                'Message': 'User Id :'+ user_id + ' Already deleted OR Not a valid request params.'
             }
         return {
                 'Message': 'Missing request params - DieticianId and UserId.'

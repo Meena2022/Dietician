@@ -33,9 +33,9 @@ class MorbidityApi(Resource):
         }
 
     def post(self):
-        data['MorbidityName'],data['MorbidityTestName'],data['MorbidityMarkerRef'],data[MorbidityTestUnit]
+        print(request.get_json())
         data = request.get_json()
-        status_flag = PRE_REQUISITE.validate_request_body(data, 'morbidity')  # Coding not completed
+        status_flag = PRE_REQUISITE.validate_request_body(data, 'morbidity_post')  # Coding not completed
         print('Status :', status_flag)
         if len(status_flag) == 0:
             auto_test_id = PRE_REQUISITE.generate_test_id(data['MorbidityName'], data['MorbidityTestName'])
@@ -64,7 +64,6 @@ class MorbidityApi(Resource):
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return {
                     'Message': 'update successful',
-                    'ModifiedAttributes': response['Attributes']
                 }
             return {
                 'Message': 'error occurred',
