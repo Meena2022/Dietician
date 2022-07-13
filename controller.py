@@ -49,8 +49,8 @@ def read_attr_that_contains_value(filterexp,filterexpval,projectionexp):
 
 def read_using_PK(pk_value,projectionexp):
     response = DietTable.query(
-        KeyCtionExonditionExpression=Key('PK').eq(pk_value),
-        Projecpression=projectionexp
+        KeyConditionExpression=Key('PK').eq(pk_value),
+        ProjectionExpression=projectionexp
     )
     return response
 

@@ -3,6 +3,12 @@ config.*
 __pycache__
 __pycache__*
 __pycache__/*
+dieticianApi/__pycache__
+dieticianApi/__pycache__*
+dieticianApi/__pycache__/*
+test/__pycache__
+test/__pycache__*
+test/__pycache__/*
 venv/
 .idea/Dietician.iml
 env/
