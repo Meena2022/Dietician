@@ -84,7 +84,7 @@ class MorbidityApi(Resource):
                 return {
                     'MorbidityName': morbidity_name,
                     'MorbidityTestId': test_id,
-                    'Message': 'Test successful deleted.'
+                    'Message': 'Morbidity Test successful deleted.'
                 }
             return {
                 'Message': 'error occurred',
