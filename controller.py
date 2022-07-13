@@ -49,8 +49,8 @@ def read_attr_that_contains_value(filterexp,filterexpval,projectionexp):
 
 def read_using_PK(pk_value,projectionexp):
     response = DietTable.query(
-        KeyCtionExonditionExpression=Key('PK').eq(pk_value),
-        Projecpression=projectionexp
+        KeyConditionExpression=Key('PK').eq(pk_value),
+        ProjectionExpression=projectionexp
     )
     return response
 
@@ -63,9 +63,19 @@ def check_user_availability(dietician,user):
             ':user': user
          }
     )
-    print(response)
+    print('Check Avail',response)
     return response['Count']
 
+def check_morbidity_availability(morbidityname, morbiditytestid):
+    response = DietTable.scan(
+        FilterExpression='MorbidityName = :morbidityname and MorbidityTestId = :morbiditytestid ',
+        ExpressionAttributeValues={
+            ':morbidityname': morbidityname,
+            ':morbiditytestid': morbiditytestid
+         }
+    )
+    print('Check Avail',response)
+    return response['Count']
 
 def check_user_duplication(name, email, contact):
     response = DietTable.scan(
