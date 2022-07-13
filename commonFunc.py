@@ -7,7 +7,8 @@ def validate_request_body(data:dict, info_type):
     filled_attributes = []
     missed_attributes = []
     req_attribute = []
-    extra_attributes = ['Extra attributes mentioned in request.']
+    extra_attributes = ['Extra attributes mentioned.']
+    notreq_attributes = []
     req_value = []
 
     if info_type.__eq__('user_post'): req_attribute=copy.deepcopy(PREFIX.REQUIRE_USER_DATA)
@@ -18,40 +19,47 @@ def validate_request_body(data:dict, info_type):
     # Collect Json body attributes
     for key in data.keys():
         filled_attributes.append(key)
-    print(len(req_attribute),len(filled_attributes))
-    # Validate Json body - Check only required attributes are passed.
+
+    print('req',len(req_attribute) ,len(filled_attributes))
+    print('Need to fill',filled_attributes)
+
+    # Validate Json body - Check any extra attributes are passed.
     if len(filled_attributes) > len(req_attribute):
+        print('Entra filled',extra_attributes)
         return extra_attributes
+
+
+    # Validate Json body - Check all required attributes are passed.
+    if len(filled_attributes) == len(req_attribute):
+        for attributes in filled_attributes:
+            if attributes not in req_attribute:
+                notreq_attributes.append(key)
+
+    print('Wrong ', notreq_attributes)
+
+    if len(notreq_attributes)>0: return notreq_attributes
 
     # Validate Json body - Find the missing attributes list.
     if len(filled_attributes) < len(req_attribute):
         print(info_type)
-        #if info_type.__eq__('user_post') or info_type.__eq__('user_put'):
         for item in req_attribute:
             print(item)
             if item not in filled_attributes: missed_attributes.append(item)
-        #elif info_type.__contains__('morbidity'):
-            #for item in req_attribute:
-               # print(item)
-                #if item not in filled_attributes: missed_attributes.append(item)
 
+    print(missed_attributes)
     if len(missed_attributes) > 0: return missed_attributes
+
 
     # Validate Json body - attributes data type and attributes values
     for key, value in data.items():
-        print(key, value, len(value))
-        if 'Address'.__eq__(key) and not isinstance(value, dict):
-            print(key, type(key), type(value), type(value) is dict, not isinstance(value, dict))
+        if key.__eq__('Address') and not isinstance(value, dict):
             req_value.append(key)
-        elif 'Address'.__ne__(key) and not isinstance(value, str):
-            print(key, type(value), isinstance(type(value), str), not isinstance(value, str))
+        elif key.__ne__('Address') and not isinstance(value, str):
             req_value.append(key)
-        elif 'Address'.__ne__(key) and isinstance(value, str) and len(value) == 0:
-            print(key, type(value), isinstance(type(value), str), not isinstance(value, str))
-            req_value.append(key)
+        elif key.__ne__('Address') and isinstance(value, str):
+            if len(value) == 0: req_value.append(key)
         elif key == 'UserType' and value not in PREFIX.USER_TYPE_PREFIX:
-            print(key, value, req_attribute.keys())
-            req_value.append(key)
+             req_value.append(key)
 
     if len(req_value) > 0:
         return req_value
@@ -65,10 +73,11 @@ def generate_user_id(user_type):
     for key in PREFIX.USER_TYPE_PREFIX.keys():
         print(key,PREFIX.USER_TYPE_PREFIX[key])
         if user_type.__eq__(key):
-            uid=PREFIX.USER_TYPE_PREFIX[key] + str(random.randrange(100,1000,1))
+            uid = PREFIX.USER_TYPE_PREFIX[key] + str(random.randrange(100, 1000, 1))
     return uid
 
 
 def generate_test_id(morbidity_name, test_name):
+    # Function to generate TEST_ID based on {MorbidityName, TestName}
     test_id = morbidity_name[0:3] + '_' + test_name[0:3]
     return test_id.upper()

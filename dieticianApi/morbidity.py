@@ -27,24 +27,31 @@ class MorbidityApi(Resource):
 
     def post(self):
         data = request.get_json()
-        status_flag = PRE_REQUISITE.validate_request_body(data, 'morbidity')  # Coding not completed
-
+        # Json body validation
+        status_flag = PRE_REQUISITE.validate_request_body(data, 'morbidity_post')
         if len(status_flag) == 0:
-            auto_test_id = PRE_REQUISITE.generate_test_id(data['MorbidityName'], data['MorbidityTestName'])
-            print('id :', auto_test_id)
-            response = dynamodb.write_morbidity(auto_test_id,data)
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            # Check - duplication based on Morbidity Name , Test Name
+            if dynamodb.check_morbidity_duplication(data['MorbidityName'], data['MorbidityTestName']) == 0:
+                # Generate TsetID based on Morbidity Name ,Test Name
+                auto_test_id = PRE_REQUISITE.generate_test_id(data['MorbidityName'], data['MorbidityTestName'])
+                print('id :', auto_test_id)
+                response = dynamodb.write_morbidity(auto_test_id,data)
+                if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                    return {
+                        'MorbidityTestId': auto_test_id,
+                        'Message': 'Morbidity successful created.'
+                    }
                 return {
-                    'MorbidityTestId': auto_test_id,
-                    'Message': 'Morbidity successful created.'
-                }
-            return {
-                    'Message': 'error occurred',
-                    'response': response
+                        'Message': 'error occurred',
+                        'response': response
+                    }
+            return{
+                'Message': 'Morbidity detail already Exists. Check on [ MorbidityName, MorbidityTestName ]'
                 }
         return{
-                'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
-            }
+            'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
+
+        }
 
     @api.doc(responses={200: 'Success', 400: 'Validation Error'})
     @api.expect(morbidity_put)
@@ -54,19 +61,24 @@ class MorbidityApi(Resource):
     })
     def put(self,MorbidityName,MorbidityTestId):
         data = request.get_json()
-
-        response = dynamodb.update_morbidity(MorbidityName, MorbidityTestId, data)
-        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+        # Json body validation
+        status_flag = PRE_REQUISITE.validate_request_body(data, 'morbidity_put')
+        if len(status_flag) == 0:
+            response = dynamodb.update_morbidity(MorbidityName, MorbidityTestId, data)
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return {
+                    'MorbidityTestId': MorbidityTestId,
+                    'MorbidityName': MorbidityName,
+                    'MorbidityMarkerRef': data['MorbidityMarkerRef'],
+                    'MorbidityTestUnit': data['MorbidityTestUnit'],
+                    'Message': 'Successfully Updated.',
+                }
             return {
-                'MorbidityTestId': MorbidityTestId,
-                'MorbidityName': MorbidityName,
-                'MorbidityMarkerRef': data['MorbidityMarkerRef'],
-                'MorbidityTestUnit': data['MorbidityTestUnit'],
-                'Message': 'Successfully Updated.',
+                'Message': 'error occurred',
+                'response': response
             }
-        return {
-            'Message': 'error occurred',
-            'response': response
+        return{
+            'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
         }
 
     @api.doc(responses={200: 'Success', 400: 'Validation Error'})
@@ -75,18 +87,23 @@ class MorbidityApi(Resource):
         'MorbidityTestId': 'Test ID of the morbidity'
     })
     def delete(self,MorbidityName,MorbidityTestId):
-        response = dynamodb.delete_morbidity(MorbidityName, MorbidityTestId)
-        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+        # Check - Morbidity name, Test id are avilable in DB for delete
+        response = dynamodb.check_morbidity_availability(MorbidityName, MorbidityTestId)
+        if response > 0:
+            response = dynamodb.delete_morbidity(MorbidityName, MorbidityTestId)
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return {
+                    'MorbidityName': MorbidityName,
+                    'MorbidityTestId': MorbidityTestId,
+                    'Message': 'Successfully Deleted.'
+                }
             return {
-                'MorbidityName': MorbidityName,
-                'MorbidityTestId': MorbidityTestId,
-                'Message': 'Successfully Deleted.'
+                'Message': 'error occurred',
+                'response': response
             }
-        return {
-            'Message': 'error occurred',
-            'response': response
+        return{
+            'Message': 'Already Deleted OR wrong MorbidityName ,MorbidityTestId.'
         }
-
 class MorbidityNameApi(Resource):
     @api.doc(responses={200: 'Success', 400: 'Validation Error'})
     @api.doc(params={'MorbidityName': 'Name of the Morbidity'})
