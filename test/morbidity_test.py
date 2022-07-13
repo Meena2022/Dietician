@@ -4,12 +4,12 @@ import requests
 BASEURL = "http://127.0.0.1:5000/"
 MORBIDITY_URL = "{}morbidity".format(BASEURL)
 
-
+"""
 def test_1_get_allmorbidity():
     r=requests.get(MORBIDITY_URL)
     assert r.status_code, 200
 
-"""
+
 def test_2_morbidity():
     pass
 
