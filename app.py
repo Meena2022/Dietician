@@ -1,34 +1,24 @@
 #pip install -r requirements.txt
 
-from flask import Flask
-from flask_restful import Api
+from flask import Flask, Blueprint
+from flask_restx import Api
 from dieticianApi import morbidity, users, recipe
 
 app = Flask(__name__)
-api = Api(app)
+blueprint = Blueprint("api", __name__)
 
-api.add_resource(morbidity.MorbidityApi,
-                     '/Morbidity/MorbidityName=<morbidityName>',
-                     '/Morbidity/MorbidityTestId=<morbidityTestId>',
-                     '/Morbidity/MorbidityName=<morbidityName>&MorbidityTestId=<morbidityTestId>',
-                     '/Morbidity'
-                     )
+api = Api(
+    blueprint,
+    version="1.0",
+    title="Dietician API",
+    description="This is the Dietician API created using Flask (Python) by Binary Bombers"
+)
+app.register_blueprint(blueprint)
 
-api.add_resource(recipe.RecipeApi,
-                    '/Recipes/RecipeFoodCategory=<recipeFoodCategory>',
-                    '/Recipes/RecipeType=<recipeType>',
-                    '/Recipes/RecipeIngredient=<recipeIngredient>',
-                    '/Recipes/RecipeNutrient=<recipeNutrient>',
-                    '/Recipes'
-                     )
-api.add_resource(users.UsersApi,
-                 '/users/FirstName=<FirstName>',
-                 '/users/Email=<Email>',
-                 '/users/Contact=<Contact>',
-                 '/users/UserType=<UserType>',
-                 '/users/DieticianId=<DieticianId>',
-                 '/users'
-                 )
+api.add_namespace(recipe.api, path="/Recipes")
+api.add_namespace(morbidity.api, path="/Morbidity")
+api.add_namespace(users.api, path="/Users")
+
 
 if __name__ == '__main__':
     app.run(debug=True)

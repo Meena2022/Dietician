@@ -1,28 +1,21 @@
 from flask import request
-from flask_restful import Resource
+from flask_restx import Resource,Namespace, fields
 import controller as dynamodb
 import key_constants as PREFIX
 import commonFunc as PRE_REQUISITE
 
+api = Namespace("Morbidity API", description="All the API's for Morbidity Data")
+
+morbidity_put = api.model('MorbidityApi', {
+    'MorbidityMarkerRef': fields.String(required=True, description='Morbidity marker reference'),
+    'MorbidityTestUnit': fields.String(required=True, description='The unit of morbidity test eg. mg/Dl')
+})
 
 class MorbidityApi(Resource):
-    def get(self,morbidityName=None,morbidityTestId=None):
+    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    def get(self):
         projectionexp = 'MorbidityName,MorbidityTestId,MorbidityTestName,MorbidityMarkerRef,MorbidityTestUnit'
-        if morbidityName.__ne__(None) :
-            pk_value = PREFIX.MORBIDITY_PK_PREFIX + morbidityName
-            response = dynamodb.read_using_PK(pk_value,projectionexp)
-        elif request.args.__contains__('MorbidityName'):
-            value = request.args.get('MorbidityName')
-            pk_value = PREFIX.MORBIDITY_PK_PREFIX + str(value)
-            response = dynamodb.read_using_PK(pk_value,projectionexp)
-        elif morbidityTestId.__ne__(None):
-            response = dynamodb.read_attr_that_contains_value('MorbidityTestId',morbidityTestId, projectionexp)
-        elif request.args.__contains__('MorbidityTestId'):
-            value = request.args.get('MorbidityTestId')
-            response = dynamodb.read_attr_that_contains_value('MorbidityTestId',value, projectionexp)
-        else:
-            response = dynamodb.read_all('InfoType','Morbidity',projectionexp)
-
+        response = dynamodb.read_all('InfoType', 'Morbidity', projectionexp)
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             if 'Items' in response:
                 return {'Items': response['Items']}
@@ -33,10 +26,9 @@ class MorbidityApi(Resource):
         }
 
     def post(self):
-        data['MorbidityName'],data['MorbidityTestName'],data['MorbidityMarkerRef'],data[MorbidityTestUnit]
         data = request.get_json()
         status_flag = PRE_REQUISITE.validate_request_body(data, 'morbidity')  # Coding not completed
-        print('Status :', status_flag)
+
         if len(status_flag) == 0:
             auto_test_id = PRE_REQUISITE.generate_test_id(data['MorbidityName'], data['MorbidityTestName'])
             print('id :', auto_test_id)
@@ -54,45 +46,84 @@ class MorbidityApi(Resource):
                 'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
             }
 
-    def put(self):
+    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.expect(morbidity_put)
+    @api.doc(params={
+        'MorbidityName': 'Name of the Morbidity',
+        'MorbidityTestId': 'Test ID of the morbidity'
+    })
+    def put(self,MorbidityName,MorbidityTestId):
         data = request.get_json()
-        morbidity_name = request.args.get('MorbidityName')
-        test_id = request.args.get('MorbidityTestId')
-        print('nane :', morbidity_name, test_id)
-        if isinstance(morbidity_name, type(None)) == False and isinstance(test_id, type(None)) == False:
-            response = dynamodb.update_morbidity(morbidity_name, test_id, data)
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return {
-                    'Message': 'update successful',
-                    'ModifiedAttributes': response['Attributes']
-                }
+
+        response = dynamodb.update_morbidity(MorbidityName, MorbidityTestId, data)
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             return {
-                'Message': 'error occurred',
-                'response': response
+                'MorbidityTestId': MorbidityTestId,
+                'MorbidityName': MorbidityName,
+                'MorbidityMarkerRef': data['MorbidityMarkerRef'],
+                'MorbidityTestUnit': data['MorbidityTestUnit'],
+                'Message': 'Successfully Updated.',
             }
-        return{
-            'Message': 'Missing request params - MorbidityName and MorbidityTestId.'
+        return {
+            'Message': 'error occurred',
+            'response': response
         }
 
-    def delete(self):
-        morbidity_name = request.args.get('MorbidityName')
-        test_id = request.args.get('MorbidityTestId')
-        print('nane :' , morbidity_name, test_id)
-        if isinstance(morbidity_name, type(None)) == False and isinstance(test_id, type(None)) == False:
-            response = dynamodb.delete_morbidity(morbidity_name, test_id)
-            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return {
-                    'MorbidityName': morbidity_name,
-                    'MorbidityTestId': test_id,
-                    'Message': 'Morbidity Test successful deleted.'
-                }
+    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.doc(params={
+        'MorbidityName': 'Name of the Morbidity',
+        'MorbidityTestId': 'Test ID of the morbidity'
+    })
+    def delete(self,MorbidityName,MorbidityTestId):
+        response = dynamodb.delete_morbidity(MorbidityName, MorbidityTestId)
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             return {
-                'Message': 'error occurred',
-                'response': response
+                'MorbidityName': MorbidityName,
+                'MorbidityTestId': MorbidityTestId,
+                'Message': 'Successfully Deleted.'
             }
-        return{
-            'Message': 'Missing request params - MorbidityName and MorbidityTestId.'
+        return {
+            'Message': 'error occurred',
+            'response': response
         }
+
+class MorbidityNameApi(Resource):
+    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.doc(params={'MorbidityName': 'Name of the Morbidity'})
+    def get(self,MorbidityName):
+        projectionexp = 'MorbidityName,MorbidityTestId,MorbidityTestName,MorbidityMarkerRef,MorbidityTestUnit'
+        pk_value = PREFIX.MORBIDITY_PK_PREFIX + MorbidityName
+        response = dynamodb.read_using_PK(pk_value, projectionexp)
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            if 'Items' in response:
+                return {'Items': response['Items']}
+            return {'Message': 'Items not found!'}
+        return {
+            'Message': 'Some error occurred',
+            'response': response
+        }
+
+class MorbidityTestIDApi(Resource):
+    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.doc(params={'MorbidityTestId': 'Test ID of the morbidity'})
+    def get(self,MorbidityTestId):
+        projectionexp = 'MorbidityName,MorbidityTestId,MorbidityTestName,MorbidityMarkerRef,MorbidityTestUnit'
+        response = dynamodb.read_attr_that_contains_value('MorbidityTestId', MorbidityTestId, projectionexp)
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            if 'Items' in response:
+                return {'Items': response['Items']}
+            return {'Message': 'Items not found!'}
+        return {
+            'Message': 'Some error occurred',
+            'response': response
+        }
+
+
+#endpoints for Morbidity
+api.add_resource(MorbidityNameApi, '/MorbidityName=<MorbidityName>', methods=['GET'])
+api.add_resource(MorbidityTestIDApi, '/MorbidityTestId=<MorbidityTestId>', methods=['GET'])
+api.add_resource(MorbidityApi, '/MorbidityName=<MorbidityName>&MorbidityTestId=<MorbidityTestId>', methods=['PUT','DELETE'])
+api.add_resource(MorbidityApi, '/', methods=['GET','POST'])
 
 
 
