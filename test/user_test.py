@@ -53,7 +53,7 @@ def test_6_post_user():
 
     print("Read from csv file and  create as  list")
     csv_list = []
-    with open("C:/Users/abhij/PycharmProjects/Dietician/test/UserPost.txt") as csvfile:
+    with open("C:/Users/abhij/PycharmProjects/Dietician/test/testfiles/UserPost.txt") as csvfile:
         csvReader = csv.reader(csvfile, delimiter='=')
         for row in csvReader:
             csv_list.append(row)
@@ -106,7 +106,7 @@ def test_7_put_morbidity():
 
     print("Read from csv file and  create as  list")
     csv_list = []
-    with open("C:/Users/abhij/PycharmProjects/Dietician/test/UserPut.txt") as csvfile:
+    with open("C:/Users/abhij/PycharmProjects/Dietician/test/testfile/UserPut.txt") as csvfile:
         csvReader = csv.reader(csvfile, delimiter='=')
         for row in csvReader:
             csv_list.append(row)
