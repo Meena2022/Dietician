@@ -30,6 +30,7 @@ now = datetime.now().__str__()
 COMMON METHODS
 """
 
+
 def read_all(filterexp,filterexpval,projectionexp):
     response = DietTable.scan(
         FilterExpression=Key(filterexp).eq(filterexpval),
@@ -37,12 +38,14 @@ def read_all(filterexp,filterexpval,projectionexp):
     )
     return response
 
+
 def read_attr_that_contains_value(filterexp,filterexpval,projectionexp):
     response = DietTable.scan(
         FilterExpression=Attr(filterexp).contains(filterexpval),
         ProjectionExpression=projectionexp
     )
     return response
+
 
 def read_using_PK(pk_value,projectionexp):
     response = DietTable.query(
@@ -52,10 +55,45 @@ def read_using_PK(pk_value,projectionexp):
     return response
 
 
+def check_user_availability(dietician,user):
+    response = DietTable.scan(
+        FilterExpression='DieticianId = :dietician and UserId = :user ',
+        ExpressionAttributeValues={
+            ':dietician': dietician,
+            ':user': user
+         }
+    )
+    print(response)
+    return response['Count']
+
+
+def check_user_duplication(name, email, contact):
+    response = DietTable.scan(
+        FilterExpression='FirstName = :name and Contact = :contact and Email = :email',
+        ExpressionAttributeValues={
+            ':name': name,
+            ':contact': email,
+            ':email': contact
+        }
+    )
+    print(response)
+    return response['Count']
+
+
+def check_morbidity_duplication(mor_name, test_name):
+    response = DietTable.scan(
+        FilterExpression='MorbidityName = :mor_name and MorbidityTestName = :test_name ',
+        ExpressionAttributeValues={
+            ':mor_name': mor_name,
+            ':test_name': test_name
+        }
+    )
+    return response['Count']
 
 """
 MORBIDITY API - FUNCTIONS
 """
+
 
 def write_morbidity(auto_test_id, data: dict):
     response = DietTable.put_item(
@@ -76,16 +114,17 @@ def write_morbidity(auto_test_id, data: dict):
 
 
 def update_morbidity(morbidity_name, test_id, data: dict):
-    print(PREFIX.MORBIDITY_PK_PREFIX+morbidity_name, PREFIX.MORBIDITY_SK_PREFIX+test_id, data['MorbidityMarkerRef'])
+    pk_value = PREFIX.MORBIDITY_PK_PREFIX+morbidity_name
+    sk_value = PREFIX.MORBIDITY_SK_PREFIX+test_id
     response = DietTable.update_item(
         Key={
-            'PK': PREFIX.MORBIDITY_PK_PREFIX+morbidity_name,
-            'SK': PREFIX.MORBIDITY_SK_PREFIX+test_id
+            'PK': pk_value,
+            'SK': sk_value
         },
-        UpdateExpression='SET MorbidityMarkerRef = :MorbidityMarkerRef, MorbidityTestUnit = :MorbidityTestUnit',
+        UpdateExpression='SET MorbidityMarkerRef = :markerRef, MorbidityTestUnit = :testUnit',
         ExpressionAttributeValues={
-            ':MorbidityMarkerRef': data['MorbidityMarkerRef'],
-            ':MorbidityTestUnit': data['MorbidityTestUnit']
+            ':markerRef': data['MorbidityMarkerRef'],
+            ':testUnit': data['MorbidityTestUnit']
         },
         ReturnValues="UPDATED_NEW"  # returns the new updated values
     )
@@ -109,7 +148,6 @@ USER API - FUNCTIONS
 
 
 def read_all_users():
-    print ('all user')
     response = DietTable.scan(
         FilterExpression='begins_with ( UserId , :uid_prefix1) OR begins_with ( UserId , :uid_prefix2)',
         ExpressionAttributeValues={
@@ -118,21 +156,6 @@ def read_all_users():
         }
     )
     return response
-
-
-def read_by_usertype(user_type):
-   pass
-
-def read_by_firstname(firastname):
-    pass
-
-
-def read_by_contact(contact):
-    pass
-
-
-def read_by_email(mail_id):
-    pass
 
 
 def write_user(auto_user_id,data):
@@ -161,7 +184,6 @@ def write_user(auto_user_id,data):
 
 
 def update_user(dietician_id, user_id, data: dict):
-    print(PREFIX.USER_PREFIX['PK']+ dietician_id, PREFIX.USER_PREFIX['SK'] + user_id)
     response = DietTable.update_item(
         Key={
             'PK': PREFIX.USER_PREFIX['PK'] + dietician_id,
@@ -185,7 +207,6 @@ def update_user(dietician_id, user_id, data: dict):
 
 
 def delete_user(dietician_id, user_id):
-    print(PREFIX.USER_PREFIX['PK'] + dietician_id, PREFIX.USER_PREFIX['SK'] + user_id)
     response = DietTable.delete_item(
         Key={
             'PK': PREFIX.USER_PREFIX['PK'] + dietician_id,
@@ -193,6 +214,7 @@ def delete_user(dietician_id, user_id):
         }
     )
     return response
+
 
 def replace_decimals(obj):
     if isinstance(obj, list):
