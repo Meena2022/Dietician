@@ -76,16 +76,17 @@ def write_morbidity(auto_test_id, data: dict):
 
 
 def update_morbidity(morbidity_name, test_id, data: dict):
-    print(PREFIX.MORBIDITY_PK_PREFIX+morbidity_name, PREFIX.MORBIDITY_SK_PREFIX+test_id, data['MorbidityMarkerRef'])
+    pk_value = PREFIX.MORBIDITY_PK_PREFIX+morbidity_name
+    sk_value = PREFIX.MORBIDITY_SK_PREFIX+test_id
     response = DietTable.update_item(
         Key={
-            'PK': PREFIX.MORBIDITY_PK_PREFIX+morbidity_name,
-            'SK': PREFIX.MORBIDITY_SK_PREFIX+test_id
+            'PK': pk_value,
+            'SK': sk_value
         },
-        UpdateExpression='SET MorbidityMarkerRef = :MorbidityMarkerRef, MorbidityTestUnit = :MorbidityTestUnit',
+        UpdateExpression='SET MorbidityMarkerRef = :markerRef, MorbidityTestUnit = :testUnit',
         ExpressionAttributeValues={
-            ':MorbidityMarkerRef': data['MorbidityMarkerRef'],
-            ':MorbidityTestUnit': data['MorbidityTestUnit']
+            ':markerRef': data['MorbidityMarkerRef'],
+            ':testUnit': data['MorbidityTestUnit']
         },
         ReturnValues="UPDATED_NEW"  # returns the new updated values
     )
@@ -118,22 +119,6 @@ def read_all_users():
         }
     )
     return response
-
-
-def read_by_usertype(user_type):
-   pass
-
-def read_by_firstname(firastname):
-    pass
-
-
-def read_by_contact(contact):
-    pass
-
-
-def read_by_email(mail_id):
-    pass
-
 
 def write_user(auto_user_id,data):
     response = DietTable.put_item(
