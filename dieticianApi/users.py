@@ -1,5 +1,7 @@
-from flask import request
+
+from flask import request,jsonify
 from flask_restx import Resource,Namespace, fields
+
 import controller as dynamodb
 import commonFunc as PRE_REQUISITE
 import key_constants as PREFIX
@@ -14,7 +16,7 @@ address_field['State'] = fields.String(readOnly=True, description='State of the 
 address_field['Country'] = fields.String(readOnly=True, description='Country of the user')
 
 
-user_put = api.model('UsersApi', {
+users_put = api.model('UsersApi', {
     'FirstName': fields.String(required=True, description='First Name of the user'),
     'LastName': fields.String(required=True, description='Last Name of the user'),
     'Address': fields.Nested(api.model('address_field', address_field)),
@@ -39,49 +41,54 @@ class UsersApi(Resource):
             'Message': 'Some error occurred',
             'response': response
         }
-
     def post(self):
-        # data['InfoType'],data['UserId'],data['FirstName'],data['LastName'],data['Address'],data['Contact']
-        # data['Email'],data['Allergy'],data['FoodCategory'],data['DieticianId'],data['LoginUsername'],data['Password']
         data = request.get_json()
-        status_flag  = PRE_REQUISITE.validate_request_body(data,'user')  # Coding not completed
-        print ('Status :',status_flag)
-        if len(status_flag)==0:
-            auto_user_id = PRE_REQUISITE.generate_user_id(data['UserType'])
-            if data['UserType']=='Dietician': data['DieticianId']=auto_user_id
-            if bool(auto_user_id):
-                response = dynamodb.write_user(auto_user_id, data)
-                if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+        if dynamodb.check_user_duplication(data['FirstName'],data['Contact'],data['Email']) == 0:
+            status_flag  = PRE_REQUISITE.validate_request_body(data, 'user_post')  # Coding  completed
+            if len(status_flag) == 0:
+                auto_user_id = PRE_REQUISITE.generate_user_id(data['UserType'])  # Coding  Completed
+                if bool(auto_user_id):
+                    if data['UserType'] == 'Dietician': data['DieticianId'] = auto_user_id
+                    response = dynamodb.write_user(auto_user_id, data)
+                    if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                        return {
+                                'UserId': auto_user_id,
+                                'Message': 'User successful created.'
+                        }
                     return {
-                        'UserId': auto_user_id,
-                        'Message': 'User successful created.'
+                        'Message': 'error occurred',
+                        'response': response
                     }
-                return {
-                    'Message': 'error occurred',
-                    'response': response
-                }
-        return {
-                'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
-              }
+            return {
+                    'Message': 'Missing Items OR Invalid Entry. Check on ' + str(status_flag)
+                  }
+        return{
+            'Message': 'User detail already Exists. Check on [ Firstname, Contact , Email ]'
+        }
 
     @api.doc(responses={200: 'Success', 400: 'Validation Error'})
-    @api.expect(user_put)
+    @api.expect(users_put)
     @api.doc(params={
         'DieticianId': 'Id of the Dietician',
         'UserId': 'Type of the user'
     })
     def put(self,DieticianId,UserId):
         data = request.get_json()
-        response = dynamodb.update_user(DieticianId, UserId, data)
-        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-            return {
-                "UserId" 	: UserId,
-                'FirstName': data['FirstName'],
-                'Message': 'User updated successful',
-            }
-        return {
-            'Message': 'error occurred',
-            'response': response
+        status_flag = PRE_REQUISITE.validate_request_body(data, 'user_put')
+        if len(status_flag) == 0:
+          response = dynamodb.update_user(DieticianId, UserId, data)
+          if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+              return {
+                  "UserId" 	: UserId,
+                  'FirstName': data['FirstName'],
+                  'Message': 'User updated successful',
+              }
+          return {
+              'Message': 'error occurred',
+              'response': response
+          }
+         return {
+            'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
         }
 
     @api.doc(responses={200: 'Success', 400: 'Validation Error'})
@@ -96,7 +103,6 @@ class UsersApi(Resource):
                 'DieticianId': dietician_id,
                 'UserId': user_id,
                 'Message': 'Successfully Deleted.'
-            }
         return {
             'Message': 'error occurred',
             'response': response

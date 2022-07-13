@@ -28,6 +28,7 @@ class MorbidityApi(Resource):
     def post(self):
         data = request.get_json()
         status_flag = PRE_REQUISITE.validate_request_body(data, 'morbidity')  # Coding not completed
+
         if len(status_flag) == 0:
             auto_test_id = PRE_REQUISITE.generate_test_id(data['MorbidityName'], data['MorbidityTestName'])
             print('id :', auto_test_id)
@@ -53,6 +54,7 @@ class MorbidityApi(Resource):
     })
     def put(self,MorbidityName,MorbidityTestId):
         data = request.get_json()
+
         response = dynamodb.update_morbidity(MorbidityName, MorbidityTestId, data)
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             return {
