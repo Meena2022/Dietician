@@ -87,7 +87,7 @@ class UsersApi(Resource):
               'Message': 'error occurred',
               'response': response
           }
-         return {
+        return {
             'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
         }
 
@@ -100,9 +100,10 @@ class UsersApi(Resource):
         response = dynamodb.delete_user(DieticianId, UserId)
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             return {
-                'DieticianId': dietician_id,
-                'UserId': user_id,
+                'DieticianId': DieticianId,
+                'UserId': UserId,
                 'Message': 'Successfully Deleted.'
+            }
         return {
             'Message': 'error occurred',
             'response': response
