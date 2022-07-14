@@ -48,7 +48,6 @@ class MorbidityApi(Resource):
             if dynamodb.check_morbidity_duplication(data['MorbidityName'], data['MorbidityTestName']) == 0:
                 # Generate TsetID based on Morbidity Name ,Test Name
                 auto_test_id = PRE_REQUISITE.generate_test_id(data['MorbidityName'], data['MorbidityTestName'])
-                print('id :', auto_test_id)
                 response = dynamodb.write_morbidity(auto_test_id,data)
                 if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                     return {

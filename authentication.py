@@ -1,7 +1,7 @@
 from flask_login import UserMixin
 
-_user_id = 'test'
-_password = 'pass'
+_user_id = 'KMSASM2022'
+_password = 'Dietician1!'
 
 
 class DieticianUser(UserMixin):
