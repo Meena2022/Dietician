@@ -49,8 +49,8 @@ def read_attr_that_contains_value(filterexp,filterexpval,projectionexp):
 
 def read_using_PK(pk_value,projectionexp):
     response = DietTable.query(
-        KeyCtionExonditionExpression=Key('PK').eq(pk_value),
-        Projecpression=projectionexp
+        KeyConditionExpression=Key('PK').eq(pk_value),
+        ProjectionExpression=projectionexp
     )
     return response
 
@@ -63,7 +63,6 @@ def check_user_availability(dietician,user):
             ':user': user
          }
     )
-    print(response)
     return response['Count']
 
 
@@ -76,7 +75,6 @@ def check_user_duplication(name, email, contact):
             ':email': contact
         }
     )
-    print(response)
     return response['Count']
 
 
@@ -132,7 +130,6 @@ def update_morbidity(morbidity_name, test_id, data: dict):
 
 
 def delete_morbidity(morbidity_name, test_id):
-    print(PREFIX.MORBIDITY_PK_PREFIX+morbidity_name, PREFIX.MORBIDITY_SK_PREFIX+test_id)
     response = DietTable.delete_item(
         Key={
             'PK': PREFIX.MORBIDITY_PK_PREFIX+morbidity_name,

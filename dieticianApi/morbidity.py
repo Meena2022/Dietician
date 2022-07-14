@@ -6,7 +6,14 @@ import commonFunc as PRE_REQUISITE
 
 api = Namespace("Morbidity API", description="All the API's for Morbidity Data")
 
-morbidity_put = api.model('MorbidityApi', {
+morbidity_put_body = api.model('MorbidityApi', {
+    'MorbidityMarkerRef': fields.String(required=True, description='Morbidity marker reference'),
+    'MorbidityTestUnit': fields.String(required=True, description='The unit of morbidity test eg. mg/Dl')
+})
+
+morbidity_post_body = api.model('MorbidityApi', {
+    'MorbidityName':fields.String(required=True, description='Name of the Morbidity'),
+    'MorbidityTestName':fields.String(required=True, description='Name of the morbidity test'),
     'MorbidityMarkerRef': fields.String(required=True, description='Morbidity marker reference'),
     'MorbidityTestUnit': fields.String(required=True, description='The unit of morbidity test eg. mg/Dl')
 })
@@ -25,10 +32,10 @@ class MorbidityApi(Resource):
             'response': response
         }
 
+    @api.expect(morbidity_post_body)
     def post(self):
         data = request.get_json()
-        status_flag = PRE_REQUISITE.validate_request_body(data, 'morbidity')  # Coding not completed
-
+        status_flag = PRE_REQUISITE.validate_request_body(data, 'morbidity_post')  # Coding not completed
         if len(status_flag) == 0:
             auto_test_id = PRE_REQUISITE.generate_test_id(data['MorbidityName'], data['MorbidityTestName'])
             print('id :', auto_test_id)
@@ -36,6 +43,7 @@ class MorbidityApi(Resource):
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return {
                     'MorbidityTestId': auto_test_id,
+                    'MorbidityName': data['MorbidityName'],
                     'Message': 'Morbidity successful created.'
                 }
             return {
@@ -47,7 +55,7 @@ class MorbidityApi(Resource):
             }
 
     @api.doc(responses={200: 'Success', 400: 'Validation Error'})
-    @api.expect(morbidity_put)
+    @api.expect(morbidity_put_body)
     @api.doc(params={
         'MorbidityName': 'Name of the Morbidity',
         'MorbidityTestId': 'Test ID of the morbidity'

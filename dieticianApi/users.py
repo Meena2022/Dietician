@@ -16,7 +16,7 @@ address_field['State'] = fields.String(readOnly=True, description='State of the 
 address_field['Country'] = fields.String(readOnly=True, description='Country of the user')
 
 
-users_put = api.model('UsersApi', {
+users_put_body = api.model('UsersApi', {
     'FirstName': fields.String(required=True, description='First Name of the user'),
     'LastName': fields.String(required=True, description='Last Name of the user'),
     'Address': fields.Nested(api.model('address_field', address_field)),
@@ -26,11 +26,16 @@ users_put = api.model('UsersApi', {
     'Allergy': fields.String(required=True, description="User's Allergy"),
 })
 
-
-
+users_post_body = api.clone('UsersPostApi',users_put_body, {
+    'LoginUsername': fields.String(required=True, description='Login user name'),
+    'Password': fields.String(required=True, description='Password'),
+    'UserType': fields.String(required=True, description='Type of user'),
+    'DieticianId': fields.String(required=True, description='ID of the Dietician'),
+})
 
 class UsersApi(Resource):
-    def get(self, FirstName=None, Email=None, Contact=None, UserType=None, DieticianId=None):
+    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    def get(self):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_all('InfoType', 'User', projectionexp)
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
@@ -41,19 +46,21 @@ class UsersApi(Resource):
             'Message': 'Some error occurred',
             'response': response
         }
+
+    @api.expect(users_post_body)
     def post(self):
         data = request.get_json()
         if dynamodb.check_user_duplication(data['FirstName'],data['Contact'],data['Email']) == 0:
-            status_flag  = PRE_REQUISITE.validate_request_body(data, 'user_post')  # Coding  completed
+            status_flag = PRE_REQUISITE.validate_request_body(data, 'user_post')
             if len(status_flag) == 0:
-                auto_user_id = PRE_REQUISITE.generate_user_id(data['UserType'])  # Coding  Completed
+                auto_user_id = PRE_REQUISITE.generate_user_id(data['UserType'])
                 if bool(auto_user_id):
                     if data['UserType'] == 'Dietician': data['DieticianId'] = auto_user_id
                     response = dynamodb.write_user(auto_user_id, data)
                     if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                         return {
                                 'UserId': auto_user_id,
-                                'Message': 'User successful created.'
+                                'Message': 'Successfully Created.'
                         }
                     return {
                         'Message': 'error occurred',
@@ -67,7 +74,7 @@ class UsersApi(Resource):
         }
 
     @api.doc(responses={200: 'Success', 400: 'Validation Error'})
-    @api.expect(users_put)
+    @api.expect(users_put_body)
     @api.doc(params={
         'DieticianId': 'Id of the Dietician',
         'UserId': 'Type of the user'
@@ -192,4 +199,4 @@ api.add_resource(UserContactAPI, '/Contact=<Contact>', methods=['GET'])
 api.add_resource(UserTypeAPI, '/UserType=<UserType>', methods=['GET'])
 api.add_resource(UserDieticianIdAPI, '/DieticianId=<DieticianId>', methods=['GET'])
 api.add_resource(UsersApi, '/DieticianId=<DieticianId>&UserId=<UserId>', methods=['PUT','DELETE'])
-api.add_resource(UsersApi, '/', methods=['POST'])
+api.add_resource(UsersApi, '/', methods=['GET','POST'])
