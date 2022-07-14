@@ -8,7 +8,7 @@ from base import ConfigBase as config
 
 def test_1_get_allUser():
     endpoint = config.USER_ENDPOINT
-    response = requests.get(endpoint)
+    response = requests.request("GET", endpoint, auth=(config.AUTH_USER, config.AUTH_PWD))
     assert response.status_code == 200
     assert response.content, "application/json"
     assert isinstance(response.json, object)
@@ -17,7 +17,7 @@ def test_1_get_allUser():
 @pytest.mark.parametrize("fname,result",[('Severse',200),('Gamora',200),('Pink',200)])
 def test_2_get_userbyfirstname(fname,result):
     endpoint = config.USER_FNAME_ENDPOINT.format(fname)
-    response = requests.get(endpoint)
+    response = requests.request("GET", endpoint, auth=(config.AUTH_USER, config.AUTH_PWD))
     assert response.status_code == result
     assert response.content , "application/json"
     assert isinstance(response.json, object)
@@ -25,7 +25,7 @@ def test_2_get_userbyfirstname(fname,result):
 @pytest.mark.parametrize("email,result",[('joker@gamil.com',200),('micky@gmail.com',200),('Wonder@g.com',200)])
 def test_3_userbyemailid(email,result):
     endpoint = config.USER_EMAIL_ENDPOINT.format(email)
-    response = requests.get(endpoint)
+    response = requests.request("GET", endpoint, auth=(config.AUTH_USER, config.AUTH_PWD))
     assert response.status_code == result
     assert response.content , "application/json"
     assert isinstance(response.json, object)
@@ -34,7 +34,7 @@ def test_3_userbyemailid(email,result):
 @pytest.mark.parametrize("contact,result",[('345678333',200),('345678122',200),('345678190',200)])
 def test_4_userbyContactno(contact,result):
     endpoint = config.USER_CONTACT_ENDPOINT.format(contact)
-    response = requests.get(endpoint)
+    response = requests.request("GET", endpoint, auth=(config.AUTH_USER, config.AUTH_PWD))
     assert response.status_code == result
     assert response.content , "application/json"
 
@@ -42,7 +42,7 @@ def test_4_userbyContactno(contact,result):
 @pytest.mark.parametrize("usertype,result",[('Patient',200),('Dietician',200)])
 def test_5_userbyUserType(usertype,result):
     endpoint = config.USER_TYPE_ENDPOINT.format(usertype)
-    response = requests.get(endpoint)
+    response = requests.request("GET", endpoint, auth=(config.AUTH_USER, config.AUTH_PWD))
     assert response.status_code == result
     assert response.content , "application/json"
 
@@ -50,7 +50,7 @@ def test_5_userbyUserType(usertype,result):
 @pytest.mark.parametrize("dietician,result",[('DT001',200),('DT002',200)])
 def test_6_userbyDieticianId(dietician,result):
     endpoint = config.USER_TYPE_ENDPOINT.format(dietician)
-    response = requests.get(endpoint)
+    response = requests.request("GET", endpoint, auth=(config.AUTH_USER, config.AUTH_PWD))
     assert response.status_code == result
     assert response.content , "application/json"
 
@@ -74,7 +74,9 @@ def test_7_post_user():
         headers = {
             'Content-Type': 'application/json'
         }
-        response = requests.request("POST", endpoint, headers=headers, data=payload)
+        response = requests.request("POST", endpoint, headers=headers, data=payload
+                                    , auth=(config.AUTH_USER, config.AUTH_PWD))
+        response = requests.request("GET", endpoint)
         assert response.status_code == 200
         assert response.content , "application/json"
 
@@ -101,7 +103,9 @@ def test_8_put_user():
             'Content-Type': 'application/json'
         }
         endpoint = config.USER_PUT_ENDPOINT.format(DId,UId)
-        response = requests.request("PUT", endpoint, headers=headers, data=payload)
+        response = requests.request("PUT", endpoint, headers=headers, data=payload,
+                                    auth = (config.AUTH_USER, config.AUTH_PWD))
+
         assert response.status_code == 200
         assert response.content , "application/json"
 
@@ -109,6 +113,6 @@ def test_8_put_user():
 @pytest.mark.parametrize("dieticianid,userid,result",[('DT001','PT457',200),('DT001','PT823',405)])
 def test_9_delete_user(dieticianid,userid,result):
     endpoint = config.USER_DEL_ENDPOINT.format(dieticianid,userid)
-    response = requests.delete(endpoint)
+    response = requests.request("DELETE", endpoint, auth=(config.AUTH_USER, config.AUTH_PWD))
     assert response.status_code == result
     assert response.content , "application/json"

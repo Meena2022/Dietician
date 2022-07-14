@@ -1,3 +1,3 @@
-80ATriiodothyronine (T4)=mm Hg=80 or higher=XHypothyroidism
-90ABlood glucose=mg/dL=00 – 125=XPre Diabetes
-70ABlood Pressure Levels=mm Hg=130  or higher=ZHypertension
+M0ATriiodothyronine (T4)=mm Hg=80 or higher=XHypothyroidism
+N0ABlood glucose=mg/dL=00 – 125=XPre Diabetes
+O0ABlood Pressure Levels=mm Hg=130  or higher=ZHypertension

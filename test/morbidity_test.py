@@ -2,15 +2,17 @@ import pytest
 import requests
 import csv
 import json
+
+from requests.auth import HTTPBasicAuth
+
 from base import ConfigBase as config
 
 
 #getrequest for all morbidities
 def test_1_get_allmorbidity():
-    #print("Get All Morbidities")
-    response = requests.request("GET", config.MORBIDITY_ENDPOINT)
+    response = requests.request("GET", config.MORBIDITY_ENDPOINT,auth=(config.AUTH_USER,config.AUTH_PWD))
     responsebody = response.json()
-    assert response.url == "http://127.0.0.1:5000/Morbidity/"
+    assert response.url == "http://127.0.0.1:5000/api/Morbidity/"
     assert response.status_code == 200
     assert response.content , "application/json"
     assert ("MorbidityName" in responsebody["Items"][0].keys()),True
@@ -24,9 +26,9 @@ def test_1_get_allmorbidity():
 @pytest.mark.parametrize("morbidityname,result",[('Hypothyroidism',200),('Pre Diabetes',200)])
 def test_2_get_morbidityname(morbidityname,result):
     endpoint = config.MORBIDITY_NAME_ENDPOINT.format(morbidityname)
-    response = requests.request("GET", endpoint)
+    response = requests.request("GET", endpoint,auth=(config.AUTH_USER,config.AUTH_PWD))
     responsebody = response.json()
-    assert response.url.__contains__("http://127.0.0.1:5000/Morbidity/MorbidityName="),True
+    assert response.url.__contains__("http://127.0.0.1:5000/api/Morbidity/MorbidityName="),True
     assert response.content , "application/json"
     assert response.status_code == result
     assert ("MorbidityName" in responsebody["Items"][0].keys()), True
@@ -37,9 +39,9 @@ def test_2_get_morbidityname(morbidityname,result):
 @pytest.mark.parametrize("testid,result",[('DIA1_BG',200),('RHEU_CCF',200)])
 def test_3_get_morbiditytestid(testid,result):
     endpoint = config.MORBIDITY_TESTID_ENDPOINT.format(testid)
-    response = requests.request("GET", endpoint)
+    response = requests.request("GET", endpoint,auth=(config.AUTH_USER,config.AUTH_PWD))
     responsebody = response.json()
-    assert response.url.__contains__("http://127.0.0.1:5000/Morbidity/MorbidityTestId="), True
+    assert response.url.__contains__("http://127.0.0.1:5000/api/Morbidity/MorbidityTestId="), True
     assert response.content, "application/json"
     assert response.status_code, result
     assert ("MorbidityName" in responsebody["Items"][0].keys()), True
@@ -59,7 +61,8 @@ def test_4_post_morbidity():
         headers = {
             'Content-Type': 'application/json'
         }
-        response = requests.request("POST", config.MORBIDITY_ENDPOINT, headers=headers, data=payload)
+        response = requests.request("POST", config.MORBIDITY_ENDPOINT, headers=headers,
+                                    data=payload,auth=(config.AUTH_USER,config.AUTH_PWD))
         assert response.content, "application/json"
         assert response.status_code == 200
         assert response.text.__contains__("Morbidity successful created.")
@@ -77,7 +80,8 @@ def test_5_put_morbidity():
             'Content-Type': 'application/json'
         }
         endpoint = config.MORBIDITY_PUT_ENDPOINT.format(morbidityname,morbiditytestid)
-        response = requests.request("PUT", endpoint , headers=headers, data=payload)
+        response = requests.request("PUT", endpoint , headers=headers, data=payload,
+                                    auth=(config.AUTH_USER,config.AUTH_PWD))
         assert response.content, "application/json"
         assert response.status_code == 200
         assert response.text.__contains__("Successfully Updated.")
@@ -87,7 +91,7 @@ def test_5_put_morbidity():
 def test_5_delete_morbidity(morbidityname,testid,result):
     #Delete Method for Morbidity
     endpoint = config.MORBIDITY_DEL_ENDPOINT.format(morbidityname, testid)
-    response = requests.request("DELETE",endpoint)
+    response = requests.request("DELETE",endpoint,auth=(config.AUTH_USER,config.AUTH_PWD))
     assert response.content, "application/json"
     assert response.status_code, result
     assert (response.text.__contains__("Successfully Deleted"))
