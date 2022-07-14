@@ -1,8 +1,10 @@
 import csv
 
 
-class Config_Base:
-    BASEURL = "http://127.0.0.1:5000/"
+class ConfigBase:
+
+    BASEURL = "http://127.0.0.1:5000/api/"
+
     MORBIDITY_POST_KEYS = ['MorbidityTestName', 'MorbidityTestUnit', 'MorbidityMarkerRef', 'MorbidityName']
     MORBIDITY_PUT_KEYS = ['MorbidityTestUnit', 'MorbidityMarkerRef']
 
@@ -27,6 +29,11 @@ class Config_Base:
     USER_PUT_ENDPOINT = BASEURL+"Users/DieticianId={}&Userid={}"
     USER_DEL_ENDPOINT = BASEURL+"Users/DieticianId={}&Userid={}"
 
+    RECIPE_ENDPOINT = BASEURL + "Recipes"
+    RECIPE_FOODCATG_ENDPOINT = BASEURL+"Recipes/RecipeFoodCategory={}"
+    RECIPE_INGR_ENDPOINT = BASEURL + "Recipes/RecipeIngredient={}"
+    RECIPE_NUTRI_ENDPOINT = BASEURL + "Recipes/RecipeNutrient={}"
+    RECIPE_RTYPE_ENDPOINT = BASEURL + "Recipes/RecipeType={}"
 
     def read_cvs(payload_path):
         csv_list=[]

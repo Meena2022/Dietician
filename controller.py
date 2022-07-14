@@ -74,7 +74,6 @@ def check_morbidity_availability(morbidityname, morbiditytestid):
             ':morbiditytestid': morbiditytestid
          }
     )
-    print('Check Avail',response)
     return response['Count']
 
 def check_user_duplication(name, email, contact):
