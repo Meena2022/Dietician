@@ -1,10 +1,13 @@
 from flask_restx import Resource,Namespace
 import controller as dynamodb
+from flask_login import login_required
 
 api = Namespace("Recipe API", description="All the API's for getting Recipe Data")
 
+
 class RecipeApi(Resource):
-    @api.doc(responses={ 200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
+    @login_required
     def get(self):
         projectionexp = "RecipeId, RecipeFoodCategory, RecipeType, RecipeName, RecipeIngredient, RecipeNutrient, RecipeStep, RecipeUrl , RecipeImg"
         result = dynamodb.read_all('InfoType', 'Recipe',projectionexp)
@@ -19,8 +22,9 @@ class RecipeApi(Resource):
         }
 
 class RecipeFoodCategoryAPI(Resource):
-    @api.doc(responses={ 200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
     @api.doc(params={'RecipeFoodCategory': 'Category of the Recipe Vegetarian / Non-Vegetarian'})
+    @login_required
     def get(self,RecipeFoodCategory):
         projectionexp = "RecipeId, RecipeFoodCategory, RecipeType, RecipeName, RecipeIngredient, RecipeNutrient, RecipeStep, RecipeUrl , RecipeImg"
         response = dynamodb.read_all('RecipeFoodCategory', RecipeFoodCategory, projectionexp)
@@ -35,8 +39,9 @@ class RecipeFoodCategoryAPI(Resource):
         }
 
 class RecipeTypeAPI(Resource):
-    @api.doc(responses={ 200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
     @api.doc(params={'RecipeType': 'Type of the recipe Lunch / Dinner / Snack / Main Course'})
+    @login_required
     def get(self,RecipeType):
         projectionexp = "RecipeId, RecipeFoodCategory, RecipeType, RecipeName, RecipeIngredient, RecipeNutrient, RecipeStep, RecipeUrl , RecipeImg"
         response = dynamodb.read_all('RecipeType', RecipeType, projectionexp)
@@ -50,9 +55,11 @@ class RecipeTypeAPI(Resource):
             'response': response
         }
 
+
 class RecipeIngredientAPI(Resource):
-    @api.doc(responses={ 200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
     @api.doc(params={'RecipeIngredient': 'One of the ingredient of the recipe eg. Paneer'})
+    @login_required
     def get(self,RecipeIngredient):
         projectionexp = "RecipeId, RecipeFoodCategory, RecipeType, RecipeName, RecipeIngredient, RecipeNutrient, RecipeStep, RecipeUrl , RecipeImg"
         response = dynamodb.read_attr_that_contains_value('RecipeIngredient', RecipeIngredient, projectionexp)
@@ -67,8 +74,9 @@ class RecipeIngredientAPI(Resource):
         }
 
 class RecipeNutrientAPI(Resource):
-    @api.doc(responses={ 200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
     @api.doc(params={'RecipeNutrient': 'Nutrient content of the recipe eg. Energy 56 cal'})
+    @login_required
     def get(self,RecipeNutrient):
         projectionexp = "RecipeId, RecipeFoodCategory, RecipeType, RecipeName, RecipeIngredient, RecipeNutrient, RecipeStep, RecipeUrl , RecipeImg"
         response = dynamodb.read_attr_that_contains_value('RecipeNutrient', RecipeNutrient, projectionexp)

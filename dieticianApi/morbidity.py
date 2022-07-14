@@ -1,17 +1,18 @@
 from flask import request
 from flask_restx import Resource,Namespace, fields
+from flask_login import login_required
 import controller as dynamodb
 import key_constants as PREFIX
 import commonFunc as PRE_REQUISITE
 
 api = Namespace("Morbidity API", description="All the API's for Morbidity Data")
 
-morbidity_put_body = api.model('MorbidityApi', {
+morbidity_put_body = api.model('MorbidityPutApi', {
     'MorbidityMarkerRef': fields.String(required=True, description='Morbidity marker reference'),
     'MorbidityTestUnit': fields.String(required=True, description='The unit of morbidity test eg. mg/Dl')
 })
 
-morbidity_post_body = api.model('MorbidityApi', {
+morbidity_post_body = api.model('MorbidityPostApi', {
     'MorbidityName':fields.String(required=True, description='Name of the Morbidity'),
     'MorbidityTestName':fields.String(required=True, description='Name of the morbidity test'),
     'MorbidityMarkerRef': fields.String(required=True, description='Morbidity marker reference'),
@@ -19,7 +20,8 @@ morbidity_post_body = api.model('MorbidityApi', {
 })
 
 class MorbidityApi(Resource):
-    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
+    @login_required
     def get(self):
         projectionexp = 'MorbidityName,MorbidityTestId,MorbidityTestName,MorbidityMarkerRef,MorbidityTestUnit'
         response = dynamodb.read_all('InfoType', 'Morbidity', projectionexp)
@@ -32,7 +34,9 @@ class MorbidityApi(Resource):
             'response': response
         }
 
+    @api.doc(responses={200: 'Success', 400: 'Validation Error', 500: 'Internal Server Error'})
     @api.expect(morbidity_post_body)
+    @login_required
     def post(self):
         data = request.get_json()
 
@@ -58,20 +62,20 @@ class MorbidityApi(Resource):
                     'Message': 'Morbidity successful created.'
                 }
             return {
-                    'Message': 'error occurred',
-                    'response': response
+                    'Message': 'error occurred'
                 }
         return{
             'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
 
         }
 
-    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={200: 'Success', 400: 'Validation Error', 500: 'Internal Server Error'})
     @api.expect(morbidity_put_body)
     @api.doc(params={
         'MorbidityName': 'Name of the Morbidity',
         'MorbidityTestId': 'Test ID of the morbidity'
     })
+    @login_required
     def put(self,MorbidityName,MorbidityTestId):
         data = request.get_json()
         # Json body validation
@@ -94,11 +98,12 @@ class MorbidityApi(Resource):
             'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
         }
 
-    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={200: 'Success', 400: 'Validation Error', 404: 'Not Found'})
     @api.doc(params={
         'MorbidityName': 'Name of the Morbidity',
         'MorbidityTestId': 'Test ID of the morbidity'
     })
+    @login_required
     def delete(self,MorbidityName,MorbidityTestId):
         # Check - Morbidity name, Test id are avilable in DB for delete
         response = dynamodb.check_morbidity_availability(MorbidityName, MorbidityTestId)
@@ -118,8 +123,9 @@ class MorbidityApi(Resource):
             'Message': 'Already Deleted OR wrong MorbidityName ,MorbidityTestId.'
         }
 class MorbidityNameApi(Resource):
-    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
     @api.doc(params={'MorbidityName': 'Name of the Morbidity'})
+    @login_required
     def get(self,MorbidityName):
         projectionexp = 'MorbidityName,MorbidityTestId,MorbidityTestName,MorbidityMarkerRef,MorbidityTestUnit'
         pk_value = PREFIX.MORBIDITY_PK_PREFIX + MorbidityName
@@ -134,8 +140,9 @@ class MorbidityNameApi(Resource):
         }
 
 class MorbidityTestIDApi(Resource):
-    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
     @api.doc(params={'MorbidityTestId': 'Test ID of the morbidity'})
+    @login_required
     def get(self,MorbidityTestId):
         projectionexp = 'MorbidityName,MorbidityTestId,MorbidityTestName,MorbidityMarkerRef,MorbidityTestUnit'
         response = dynamodb.read_attr_that_contains_value('MorbidityTestId', MorbidityTestId, projectionexp)
