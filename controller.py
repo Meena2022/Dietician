@@ -63,7 +63,7 @@ def check_user_availability(dietician,user):
             ':user': user
          }
     )
-    print('Check Avail',response)
+
     return response['Count']
 
 def check_morbidity_availability(morbidityname, morbiditytestid):
@@ -86,7 +86,6 @@ def check_user_duplication(name, email, contact):
             ':email': contact
         }
     )
-    print(response)
     return response['Count']
 
 
@@ -142,7 +141,6 @@ def update_morbidity(morbidity_name, test_id, data: dict):
 
 
 def delete_morbidity(morbidity_name, test_id):
-    print(PREFIX.MORBIDITY_PK_PREFIX+morbidity_name, PREFIX.MORBIDITY_SK_PREFIX+test_id)
     response = DietTable.delete_item(
         Key={
             'PK': PREFIX.MORBIDITY_PK_PREFIX+morbidity_name,
