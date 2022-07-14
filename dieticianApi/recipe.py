@@ -10,7 +10,7 @@ class RecipeApi(Resource):
         result = dynamodb.read_all('InfoType', 'Recipe',projectionexp)
         response = dynamodb.replace_decimals(result)
         if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
-            if ('Items' in response):
+            if 'Items' in response and response['Count'] > 0:
                 return response
             return {'msg': 'Item not found!'}
         return {
@@ -26,7 +26,7 @@ class RecipeFoodCategoryAPI(Resource):
         response = dynamodb.read_all('RecipeFoodCategory', RecipeFoodCategory, projectionexp)
         response = dynamodb.replace_decimals(response)
         if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
-            if ('Items' in response):
+            if 'Items' in response and response['Count'] > 0:
                 return response
             return {'msg': 'Item not found!'}
         return {
@@ -42,7 +42,7 @@ class RecipeTypeAPI(Resource):
         response = dynamodb.read_all('RecipeType', RecipeType, projectionexp)
         response = dynamodb.replace_decimals(response)
         if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
-            if ('Items' in response):
+            if 'Items' in response and response['Count'] > 0:
                 return response
             return {'msg': 'Item not found!'}
         return {
@@ -58,7 +58,7 @@ class RecipeIngredientAPI(Resource):
         response = dynamodb.read_attr_that_contains_value('RecipeIngredient', RecipeIngredient, projectionexp)
         response = dynamodb.replace_decimals(response)
         if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
-            if ('Items' in response):
+            if 'Items' in response and response['Count'] > 0:
                 return response
             return {'msg': 'Item not found!'}
         return {
@@ -74,7 +74,7 @@ class RecipeNutrientAPI(Resource):
         response = dynamodb.read_attr_that_contains_value('RecipeNutrient', RecipeNutrient, projectionexp)
         response = dynamodb.replace_decimals(response)
         if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
-            if ('Items' in response):
+            if 'Items' in response and response['Count'] > 0:
                 return response
             return {'msg': 'Item not found!'}
         return {

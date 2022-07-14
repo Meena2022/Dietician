@@ -2,75 +2,68 @@ import pytest
 import requests
 import csv
 import json
-
-BASEURL = "http://127.0.0.1:5000/"
-EMAIL = "joker@gamil.com"
-FIRSTNAME = "Bat"
-CONTACT = "234083664"
-USERTYPE = "Patient"
-DIETICIANID = "DT003"
-USERID = "PT0014"
-
-def test_1_get_userbyfirstname():
-    users_url = "{}Users/FirstName={}".format(BASEURL, FIRSTNAME)
-    r = requests.get(users_url)
-    assert r.status_code, 200
-    assert r.content, "application/json"
-    assert isinstance(r.json, object)
-    # assert set(r.json.keys()) >= {'Email', 'UserId'}
-    # assert r.json['UserId'] == "PT0005"
+from base import Config_Base as config
 
 
-def test_2_userbyemailid():
-    users_url = "{}Users/Email={}".format(BASEURL, EMAIL)
-    r = requests.get(users_url)
-    assert r.status_code, 200
-    assert r.content, "application/json"
+def test_1_get_allUser():
+    endpoint = config.USER_ENDPOINT
+    response = requests.get(endpoint)
+    print(response)
+    print(endpoint)
+    assert response.status_code == 200
+    assert response.content, "application/json"
+    assert isinstance(response.json, object)
 
 
-def test_3_userbyContactno():
-    users_url = "{}Users/Contact={}".format(BASEURL, CONTACT)
-    r = requests.get(users_url)
-    assert r.status_code, 200
-    assert r.content, "application/json"
+@pytest.mark.parametrize("fname,result",[('Severse',200),('Gamora',200),('Pink',200)])
+def test_2_get_userbyfirstname(fname,result):
+    endpoint = config.USER_FNAME_ENDPOINT.format(fname)
+    response = requests.get(endpoint)
+    assert response.status_code == result
+    assert response.content , "application/json"
+    assert isinstance(response.json, object)
+
+@pytest.mark.parametrize("email,result",[('joker@gamil.com',200),('micky@gmail.com',200),('Wonder@g.com',200)])
+def test_3_userbyemailid(email,result):
+    endpoint = config.USER_EMAIL_ENDPOINT.format(email)
+    response = requests.get(endpoint)
+    assert response.status_code == result
+    assert response.content , "application/json"
+    assert isinstance(response.json, object)
 
 
-def test_4_userbyUserType():
-    users_url = "{}Users/UserType={}".format(BASEURL, USERTYPE)
-    r = requests.get(users_url)
-    assert r.status_code, 200
-    assert r.content, "application/json"
+@pytest.mark.parametrize("contact,result",[('345678333',200),('345678122',200),('345678190',200)])
+def test_4_userbyContactno(contact,result):
+    endpoint = config.USER_CONTACT_ENDPOINT.format(contact)
+    response = requests.get(endpoint)
+    assert response.status_code == result
+    assert response.content , "application/json"
 
-def test_5_userbyDieticianId():
-    users_url = "{}Users/DieticianId={}".format(BASEURL, DIETICIANID)
-    r = requests.get(users_url)
-    assert r.status_code, 200
-    assert r.content, "application/json"
 
-def test_6_post_user():
-    user_key_list = ['UserType', 'FirstName', 'LastName', 'Contact', 'Email', 'Allergy', 'FoodCategory',
-                     'DieticianId', 'Address1', 'Address2', 'City', 'State', 'Country', 'LoginUsername', 'Password']
+@pytest.mark.parametrize("usertype,result",[('Patient',200),('Dietician',200)])
+def test_5_userbyUserType(usertype,result):
+    endpoint = config.USER_TYPE_ENDPOINT.format(usertype)
+    response = requests.get(endpoint)
+    assert response.status_code == result
+    assert response.content , "application/json"
 
-    print("Read from csv file and  create as  list")
-    csv_list = []
-    with open("C:/Users/abhij/PycharmProjects/Dietician/test/UserPost.txt") as csvfile:
-        csvReader = csv.reader(csvfile, delimiter='=')
-        for row in csvReader:
-            csv_list.append(row)
-    print(csv_list)
 
-    print("Convert cvs list into list of dict")
-    user_list = []
-    for item in enumerate(csv_list):
-        d = ({k: v for k, v in zip(user_key_list, item[1])})
-        user_list.append(d)
-    print(user_list)
+@pytest.mark.parametrize("dietician,result",[('DT001',200),('DT002',200)])
+def test_6_userbyDieticianId(dietician,result):
+    endpoint = config.USER_TYPE_ENDPOINT.format(dietician)
+    response = requests.get(endpoint)
+    assert response.status_code == result
+    assert response.content , "application/json"
 
+
+def test_7_post_user():
+
+    endpoint = config.USER_ENDPOINT
+    csv_list = config.read_cvs("testfiles/UserPost.txt")
+    user_list = config.convert_csv_dict(config.USER__POST_KEYS, csv_list)
     user_detail = {}
     Address_map = {}
-    temp_dict = {}
     print("create Address dict")
-    users_url = "{}users".format(BASEURL)
     for index, item in enumerate(user_list):
         temp_dict = item
         for key, value in temp_dict.items():
@@ -79,79 +72,47 @@ def test_6_post_user():
             else:
                 user_detail[key] = value
         user_detail['Address'] = Address_map
-        print(user_detail)
 
-
-    # for item in enumerate(user_detail):
-    #     print(user_detail)
-        print(users_url)
         payload = json.dumps(user_detail)
         headers = {
             'Content-Type': 'application/json'
         }
-
-        print(payload)
-        # response=requests.post(,data=payload,headers=headers)
-        response = requests.request("POST", users_url, headers=headers, data=payload)
-        assert response.status_code, 200
-        assert response.content, "application/json"
-
-        # print(response.status_code)
-        print(response.text.__contains__("Successfully Created."))
+        response = requests.request("POST", endpoint, headers=headers, data=payload)
+        assert response.status_code == 200
+        assert response.content , "application/json"
 
 
-def test_7_put_morbidity():
-    user_key_list = ['FirstName', 'LastName', 'Contact', 'Email', 'Allergy', 'FoodCategory',
-                      'Address1', 'Address2', 'City', 'State', 'Country']
-
+def test_8_put_morbidity():
     print("Read from csv file and  create as  list")
-    csv_list = []
-    with open("C:/Users/abhij/PycharmProjects/Dietician/test/UserPut.txt") as csvfile:
-        csvReader = csv.reader(csvfile, delimiter='=')
-        for row in csvReader:
-            csv_list.append(row)
-    print(csv_list)
-
-    print("Convert cvs list into list of dict")
+    csv_list = config.read_cvs("testfiles/UserPut.txt")
     user_list = []
-    users_url = "{}users?DieticianId={}&UserId={}"
     for item in enumerate(csv_list):
-
         DId = item[1][11]
         UId = item[1][12]
-        d = ({k: v for k, v in zip(user_key_list, item[1])})
+        d = ({k: v for k, v in zip(config.USER_PUT_KEYS, item[1])})
         user_list.append(d)
 
         user_detail = {}
         Address_map = {}
-
-        print("create Address dict")
-
         for key, value in d.items():
             if key in ('Address1', 'Address2', 'City', 'State', 'Country'):
                 Address_map[key] = value
             else:
                 user_detail[key] = value
         user_detail['Address'] = Address_map
-
         payload = json.dumps(user_detail)
         headers = {
             'Content-Type': 'application/json'
         }
-
-        users_url = users_url.format(BASEURL, DId, UId)
-
-        response = requests.request("PUT", users_url, headers=headers, data=payload)
-        assert response.status_code, 200
-        assert response.content, "application/json"
-
-        print(response.text.__contains__("Successfully Updated."))
-
-        assert response.url == "http://127.0.0.1:5000/users?DieticianId=DT001&UserId=PT889"
+        endpoint = config.USER_PUT_ENDPOINT.format(DId,UId)
+        response = requests.request("PUT", endpoint, headers=headers, data=payload)
+        assert response.status_code == 200
+        assert response.content , "application/json"
 
 
-def test_8_delete_user():
-    users_url = "{}Users/DieticianId={}/UserId={}".format(BASEURL, DIETICIANID, USERID)
-    r = requests.delete(users_url)
-    print(users_url)
-    assert r.status_code, 200
+@pytest.mark.parametrize("dieticianid,userid,result",[('DT001','PT457',200),('DT001','PT823',200)])
+def test_9_delete_user(dieticianid,userid,result):
+    endpoint = config.USER_DEL_ENDPOINT.format(dieticianid,userid)
+    response = requests.delete(endpoint)
+    assert response.status_code == result
+    assert response.content , "application/json"

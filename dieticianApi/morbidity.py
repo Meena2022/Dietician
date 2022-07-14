@@ -17,7 +17,7 @@ class MorbidityApi(Resource):
         projectionexp = 'MorbidityName,MorbidityTestId,MorbidityTestName,MorbidityMarkerRef,MorbidityTestUnit'
         response = dynamodb.read_all('InfoType', 'Morbidity', projectionexp)
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-            if 'Items' in response:
+            if 'Items' in response and response['Count'] > 0:
                 return {'Items': response['Items']}
             return {'Message': 'Items not found!'}
         return {
@@ -112,7 +112,7 @@ class MorbidityNameApi(Resource):
         pk_value = PREFIX.MORBIDITY_PK_PREFIX + MorbidityName
         response = dynamodb.read_using_PK(pk_value, projectionexp)
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-            if 'Items' in response:
+            if 'Items' in response and response['Count'] > 0:
                 return {'Items': response['Items']}
             return {'Message': 'Items not found!'}
         return {
@@ -127,7 +127,7 @@ class MorbidityTestIDApi(Resource):
         projectionexp = 'MorbidityName,MorbidityTestId,MorbidityTestName,MorbidityMarkerRef,MorbidityTestUnit'
         response = dynamodb.read_attr_that_contains_value('MorbidityTestId', MorbidityTestId, projectionexp)
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-            if 'Items' in response:
+            if 'Items' in response and response['Count'] > 0:
                 return {'Items': response['Items']}
             return {'Message': 'Items not found!'}
         return {
