@@ -2,7 +2,7 @@ import pytest
 import requests
 import csv
 import json
-from base import Config_Base as config
+from base import ConfigBase as config
 
 
 #getrequest for all morbidities
@@ -51,7 +51,6 @@ def test_3_get_morbiditytestid(testid,result):
 
 # Add New Morbidity by Post Method
 def test_4_post_morbidity():
-    print("Post Method for Morbidity by MorbidityName")
     csv_list = config.read_cvs("testfiles/postmorbiditydetails.txt")
     Morbidity_list = config.convert_csv_dict(config.MORBIDITY_POST_KEYS,csv_list)
     for item in enumerate(Morbidity_list):
@@ -67,7 +66,7 @@ def test_4_post_morbidity():
 
 #Update Morbidity by Put Method
 def test_5_put_morbidity():
-    print("Put Method for Morbidity")
+    #Put Method for Morbidity
     csv_list = config.read_cvs("testfiles/putmorbiditydetails.txt")
     for item in enumerate(csv_list):
         morbidity_data = ({k: v for k, v in zip(config.MORBIDITY_PUT_KEYS, item[1])})
@@ -86,7 +85,7 @@ def test_5_put_morbidity():
 # delete Morbidity
 @pytest.mark.parametrize("morbidityname,testid,result",[('dabcHypothyroidism','DAB_1AT',200),('dabcHypothyroidism','DAB_10A',200)])
 def test_5_delete_morbidity(morbidityname,testid,result):
-    print("Delete Method for Morbidity")
+    #Delete Method for Morbidity
     endpoint = config.MORBIDITY_DEL_ENDPOINT.format(morbidityname, testid)
     response = requests.request("DELETE",endpoint)
     assert response.content, "application/json"

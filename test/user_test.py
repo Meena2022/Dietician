@@ -2,15 +2,13 @@ import pytest
 import requests
 import csv
 import json
-from base import Config_Base as config
+from base import ConfigBase as config
 
 
 
 def test_1_get_allUser():
     endpoint = config.USER_ENDPOINT
     response = requests.get(endpoint)
-    print(response)
-    print(endpoint)
     assert response.status_code == 200
     assert response.content, "application/json"
     assert isinstance(response.json, object)
@@ -58,13 +56,11 @@ def test_6_userbyDieticianId(dietician,result):
 
 
 def test_7_post_user():
-
     endpoint = config.USER_ENDPOINT
     csv_list = config.read_cvs("testfiles/UserPost.txt")
     user_list = config.convert_csv_dict(config.USER__POST_KEYS, csv_list)
     user_detail = {}
     Address_map = {}
-    print("create Address dict")
     for index, item in enumerate(user_list):
         temp_dict = item
         for key, value in temp_dict.items():
@@ -83,7 +79,7 @@ def test_7_post_user():
         assert response.content , "application/json"
 
 
-def test_8_put_morbidity():
+def test_8_put_user():
     print("Read from csv file and  create as  list")
     csv_list = config.read_cvs("testfiles/UserPut.txt")
     user_list = []
@@ -92,7 +88,6 @@ def test_8_put_morbidity():
         UId = item[1][12]
         d = ({k: v for k, v in zip(config.USER_PUT_KEYS, item[1])})
         user_list.append(d)
-
         user_detail = {}
         Address_map = {}
         for key, value in d.items():
@@ -111,7 +106,7 @@ def test_8_put_morbidity():
         assert response.content , "application/json"
 
 
-@pytest.mark.parametrize("dieticianid,userid,result",[('DT001','PT457',200),('DT001','PT823',200)])
+@pytest.mark.parametrize("dieticianid,userid,result",[('DT001','PT457',200),('DT001','PT823',405)])
 def test_9_delete_user(dieticianid,userid,result):
     endpoint = config.USER_DEL_ENDPOINT.format(dieticianid,userid)
     response = requests.delete(endpoint)

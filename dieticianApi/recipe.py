@@ -11,7 +11,7 @@ class RecipeApi(Resource):
         response = dynamodb.replace_decimals(result)
         if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
             if 'Items' in response and response['Count'] > 0:
-                return response
+                return {'Items': response['Items']}
             return {'msg': 'Item not found!'}
         return {
             'msg': 'error occurred',
@@ -27,7 +27,7 @@ class RecipeFoodCategoryAPI(Resource):
         response = dynamodb.replace_decimals(response)
         if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
             if 'Items' in response and response['Count'] > 0:
-                return response
+                return {'Items': response['Items']}
             return {'msg': 'Item not found!'}
         return {
             'msg': 'error occurred',
@@ -43,7 +43,7 @@ class RecipeTypeAPI(Resource):
         response = dynamodb.replace_decimals(response)
         if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
             if 'Items' in response and response['Count'] > 0:
-                return response
+                return {'Items': response['Items']}
             return {'msg': 'Item not found!'}
         return {
             'msg': 'error occurred',
@@ -59,7 +59,7 @@ class RecipeIngredientAPI(Resource):
         response = dynamodb.replace_decimals(response)
         if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
             if 'Items' in response and response['Count'] > 0:
-                return response
+                return {'Items': response['Items']}
             return {'msg': 'Item not found!'}
         return {
             'msg': 'error occurred',
@@ -75,7 +75,7 @@ class RecipeNutrientAPI(Resource):
         response = dynamodb.replace_decimals(response)
         if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
             if 'Items' in response and response['Count'] > 0:
-                return response
+                return {'Items': response['Items']}
             return {'msg': 'Item not found!'}
         return {
             'msg': 'error occurred',

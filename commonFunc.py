@@ -4,6 +4,7 @@ import key_constants as PREFIX
 
 
 def validate_request_body(data:dict, info_type):
+    #Validae Json body for PUT , POSt
     filled_attributes = []
     missed_attributes = []
     req_attribute = []
@@ -20,13 +21,8 @@ def validate_request_body(data:dict, info_type):
     for key in data.keys():
         filled_attributes.append(key)
 
-
-    print('req',len(req_attribute) ,len(filled_attributes))
-    print('Need to fill',filled_attributes)
-
     # Validate Json body - Check any extra attributes are passed.
     if len(filled_attributes) > len(req_attribute):
-        print('Entra filled',extra_attributes)
         return extra_attributes
 
 
@@ -36,23 +32,18 @@ def validate_request_body(data:dict, info_type):
             if attributes not in req_attribute:
                 notreq_attributes.append(key)
 
-    print('Wrong ', notreq_attributes)
-
     if len(notreq_attributes)>0: return notreq_attributes
 
     # Validate Json body - Find the missing attributes list.
     if len(filled_attributes) < len(req_attribute):
-
         for item in req_attribute:
             if item not in filled_attributes: missed_attributes.append(item)
 
-    print(missed_attributes)
     if len(missed_attributes) > 0: return missed_attributes
 
 
     # Validate Json body - attributes data type and attributes values
     for key, value in data.items():
-
         if key.__eq__('Address') and not isinstance(value, dict):
             req_value.append(key)
         elif key.__ne__('Address') and not isinstance(value, str):
@@ -73,7 +64,7 @@ def generate_user_id(user_type):
     uid = ''
     for key in PREFIX.USER_TYPE_PREFIX.keys():
         if user_type.__eq__(key):
-            uid = PREFIX.USER_TYPE_PREFIX[key] + str(random.randrange(100, 1000, 1))
+            uid = PREFIX.USER_TYPE_PREFIX[key] + str(random.randrange(100, 10000, 1))
     return uid
 
 
