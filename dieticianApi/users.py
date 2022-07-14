@@ -1,7 +1,7 @@
 
 from flask import request,jsonify
 from flask_restx import Resource,Namespace, fields
-
+from flask_login import login_required
 import controller as dynamodb
 import commonFunc as PRE_REQUISITE
 import key_constants as PREFIX
@@ -16,7 +16,7 @@ address_field['State'] = fields.String(readOnly=True, description='State of the 
 address_field['Country'] = fields.String(readOnly=True, description='Country of the user')
 
 
-users_put_body = api.model('UsersApi', {
+users_put_body = api.model('UsersPutApi', {
     'FirstName': fields.String(required=True, description='First Name of the user'),
     'LastName': fields.String(required=True, description='Last Name of the user'),
     'Address': fields.Nested(api.model('address_field', address_field)),
@@ -34,7 +34,8 @@ users_post_body = api.clone('UsersPostApi',users_put_body, {
 })
 
 class UsersApi(Resource):
-    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
+    @login_required
     def get(self):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_all('InfoType', 'User', projectionexp)
@@ -47,7 +48,9 @@ class UsersApi(Resource):
             'response': response
         }
 
+    @api.doc(responses={200: 'Success', 400: 'Validation Error', 500: 'Internal Server Error'})
     @api.expect(users_post_body)
+    @login_required
     def post(self):
         data = request.get_json()
 
@@ -79,12 +82,13 @@ class UsersApi(Resource):
             'Message': 'Missing Items OR Invalid Entry. Check on ' + str(status_flag)
         }
 
-    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={200: 'Success', 400: 'Validation Error', 500: 'Internal Server Error'})
     @api.expect(users_put_body)
     @api.doc(params={
         'DieticianId': 'Id of the Dietician',
         'UserId': 'Type of the user'
     })
+    @login_required
     def put(self,DieticianId,UserId):
         data = request.get_json()
         # Json body validation
@@ -105,11 +109,12 @@ class UsersApi(Resource):
             'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
         }
 
-    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={200: 'Success', 400: 'Validation Error',404:'Not Found'})
     @api.doc(params={
         'DieticianId': 'Id of the Dietician',
         'UserId': 'Type of the user'
     })
+    @login_required
     def delete(self,DieticianId,UserId):
         # Check - Dieticianid, Userid are avilable in DB for delete
         response = dynamodb.check_user_availability(DieticianId,UserId)
@@ -131,8 +136,9 @@ class UsersApi(Resource):
 
 
 class UserFirstNameAPI(Resource):
-    @api.doc(responses={ 200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
     @api.doc(params={'FirstName': 'First Name of the user'})
+    @login_required
     def get(self,FirstName):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_attr_that_contains_value('FirstName', FirstName, projectionexp)
@@ -147,8 +153,9 @@ class UserFirstNameAPI(Resource):
         }
 
 class UserEmailAPI(Resource):
-    @api.doc(responses={ 200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
     @api.doc(params={'Email': 'Email of the user'})
+    @login_required
     def get(self,Email):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_attr_that_contains_value('Email', Email, projectionexp)
@@ -162,8 +169,9 @@ class UserEmailAPI(Resource):
         }
 
 class UserContactAPI(Resource):
-    @api.doc(responses={ 200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
     @api.doc(params={'Contact': 'Contact of the user'})
+    @login_required
     def get(self,Contact):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_attr_that_contains_value('Contact', Contact, projectionexp)
@@ -177,8 +185,9 @@ class UserContactAPI(Resource):
         }
 
 class UserTypeAPI(Resource):
-    @api.doc(responses={ 200: 'Success', 400: 'Validation Error'})
-    @api.doc(params={'UserType': 'Type of the user'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
+    @api.doc(params={'UserType': 'Type of the user eg. Dietician / Patient'})
+    @login_required
     def get(self,UserType):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_attr_that_contains_value('UserType', UserType, projectionexp)
@@ -192,8 +201,9 @@ class UserTypeAPI(Resource):
         }
 
 class UserDieticianIdAPI(Resource):
-    @api.doc(responses={200: 'Success', 400: 'Validation Error'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error',401: 'Unauthorised Acces',404:'Not Found'})
     @api.doc(params={'DieticianId': 'Id of the Dietician'})
+    @login_required
     def get(self, DieticianId):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_all('DieticianId', DieticianId, projectionexp)
