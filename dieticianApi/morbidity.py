@@ -6,7 +6,14 @@ import commonFunc as PRE_REQUISITE
 
 api = Namespace("Morbidity API", description="All the API's for Morbidity Data")
 
-morbidity_put = api.model('MorbidityApi', {
+morbidity_put_body = api.model('MorbidityApi', {
+    'MorbidityMarkerRef': fields.String(required=True, description='Morbidity marker reference'),
+    'MorbidityTestUnit': fields.String(required=True, description='The unit of morbidity test eg. mg/Dl')
+})
+
+morbidity_post_body = api.model('MorbidityApi', {
+    'MorbidityName':fields.String(required=True, description='Name of the Morbidity'),
+    'MorbidityTestName':fields.String(required=True, description='Name of the morbidity test'),
     'MorbidityMarkerRef': fields.String(required=True, description='Morbidity marker reference'),
     'MorbidityTestUnit': fields.String(required=True, description='The unit of morbidity test eg. mg/Dl')
 })
@@ -25,10 +32,13 @@ class MorbidityApi(Resource):
             'response': response
         }
 
+    @api.expect(morbidity_post_body)
     def post(self):
         data = request.get_json()
+
         # Json body validation
         status_flag = PRE_REQUISITE.validate_request_body(data, 'morbidity_post')
+
         if len(status_flag) == 0:
             # Check - duplication based on Morbidity Name , Test Name
             if dynamodb.check_morbidity_duplication(data['MorbidityName'], data['MorbidityTestName']) == 0:
@@ -42,11 +52,14 @@ class MorbidityApi(Resource):
                         'Message': 'Morbidity successful created.'
                     }
                 return {
-                        'Message': 'error occurred',
-                        'response': response
-                    }
-            return{
-                'Message': 'Morbidity detail already Exists. Check on [ MorbidityName, MorbidityTestName ]'
+
+                    'MorbidityTestId': auto_test_id,
+                    'MorbidityName': data['MorbidityName'],
+                    'Message': 'Morbidity successful created.'
+                }
+            return {
+                    'Message': 'error occurred',
+                    'response': response
                 }
         return{
             'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
@@ -54,7 +67,7 @@ class MorbidityApi(Resource):
         }
 
     @api.doc(responses={200: 'Success', 400: 'Validation Error'})
-    @api.expect(morbidity_put)
+    @api.expect(morbidity_put_body)
     @api.doc(params={
         'MorbidityName': 'Name of the Morbidity',
         'MorbidityTestId': 'Test ID of the morbidity'

@@ -5,6 +5,7 @@ import json
 from base import Config_Base as config
 
 
+
 def test_1_get_allUser():
     endpoint = config.USER_ENDPOINT
     response = requests.get(endpoint)
