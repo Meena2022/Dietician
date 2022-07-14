@@ -10,7 +10,7 @@ blueprint = Blueprint("api", __name__)
 api = Api(
     blueprint,
     version="1.0",
-    title="Dietician API",
+    title="DieticianAPI",
     description="This is the Dietician API created using Flask (Python) by Binary Bombers"
 )
 app.register_blueprint(blueprint)

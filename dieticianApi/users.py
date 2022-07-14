@@ -50,10 +50,15 @@ class UsersApi(Resource):
     @api.expect(users_post_body)
     def post(self):
         data = request.get_json()
-        if dynamodb.check_user_duplication(data['FirstName'],data['Contact'],data['Email']) == 0:
-            status_flag = PRE_REQUISITE.validate_request_body(data, 'user_post')
-            if len(status_flag) == 0:
-                auto_user_id = PRE_REQUISITE.generate_user_id(data['UserType'])
+
+        # Json body validation
+        status_flag  = PRE_REQUISITE.validate_request_body(data, 'user_post')
+        if len(status_flag) == 0:
+            # Check - duplication based on Firstname , Contact , Email
+            if dynamodb.check_user_duplication(data['FirstName'], data['Contact'], data['Email']) == 0:
+                # Generate UserID based on Usertype
+                auto_user_id = PRE_REQUISITE.generate_user_id(data['UserType'])  # Auto
+
                 if bool(auto_user_id):
                     if data['UserType'] == 'Dietician': data['DieticianId'] = auto_user_id
                     response = dynamodb.write_user(auto_user_id, data)
@@ -61,16 +66,17 @@ class UsersApi(Resource):
                         return {
                                 'UserId': auto_user_id,
                                 'Message': 'Successfully Created.'
+
                         }
                     return {
                         'Message': 'error occurred',
                         'response': response
                     }
             return {
-                    'Message': 'Missing Items OR Invalid Entry. Check on ' + str(status_flag)
-                  }
+                'Message': 'User detail already Exists. Check on [ Firstname, Contact , Email ]'
+            }
         return{
-            'Message': 'User detail already Exists. Check on [ Firstname, Contact , Email ]'
+            'Message': 'Missing Items OR Invalid Entry. Check on ' + str(status_flag)
         }
 
     @api.doc(responses={200: 'Success', 400: 'Validation Error'})
@@ -81,19 +87,20 @@ class UsersApi(Resource):
     })
     def put(self,DieticianId,UserId):
         data = request.get_json()
+        # Json body validation
         status_flag = PRE_REQUISITE.validate_request_body(data, 'user_put')
         if len(status_flag) == 0:
-          response = dynamodb.update_user(DieticianId, UserId, data)
-          if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-              return {
-                  "UserId" 	: UserId,
-                  'FirstName': data['FirstName'],
-                  'Message': 'User updated successful',
-              }
-          return {
-              'Message': 'error occurred',
-              'response': response
-          }
+            response = dynamodb.update_user(DieticianId, UserId, data)
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return {
+                    'UserId' : UserId,
+                    'FirstName': data['FirstName'],
+                    'Message': 'User updated successful',
+                    }
+            return {
+                'Message': 'error occurred',
+                'response': response
+            }
         return {
             'Message': 'Missing Items OR Invalid Entry.Check on ' + str(status_flag)
         }
@@ -104,16 +111,22 @@ class UsersApi(Resource):
         'UserId': 'Type of the user'
     })
     def delete(self,DieticianId,UserId):
-        response = dynamodb.delete_user(DieticianId, UserId)
-        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+        # Check - Dieticianid, Userid are avilable in DB for delete
+        response = dynamodb.check_user_availability(DieticianId,UserId)
+        if response > 0:
+            response = dynamodb.delete_user(DieticianId, UserId)
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return {
+                    'DieticianId': DieticianId,
+                    'UserId': UserId,
+                    'Message': 'Successfully Deleted.'
+                }
             return {
-                'DieticianId': DieticianId,
-                'UserId': UserId,
-                'Message': 'Successfully Deleted.'
+                'Message': 'error occurred',
+                'response': response
             }
-        return {
-            'Message': 'error occurred',
-            'response': response
+        return{
+            'Message' : 'Already Deleted OR wrong DieticinaId ,UserId.'
         }
 
 

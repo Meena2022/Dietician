@@ -9,7 +9,7 @@ INFO_TYPE = {'MORBIDITY':'Morbidity','USER':'User'}
 USER_TYPE_PREFIX = {'Dietician':'DT','Patient':'PT'}
 
 
-REQUIRE_USER_DATA = ['UserType', 'FirstName', 'LastName', 'Address','Contact', 'Email','DieticianId', 'LoginUsername', 'Password', 'FoodCategory', ' Allergy']
+REQUIRE_USER_DATA = ['UserType', 'FirstName', 'LastName', 'Address','Contact', 'Email','DieticianId', 'LoginUsername', 'Password', 'FoodCategory', 'Allergy']
 
 UPDATABLE_USER_DATA = ['FirstName', 'LastName', 'Address', 'Contact', 'Email', 'FoodCategory', 'Allergy']
 

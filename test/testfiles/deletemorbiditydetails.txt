@@ -1,0 +1,2 @@
+abcHypothyroidism=SVD_SVB
+SVNDiabetes Type10=SVN_SVN
