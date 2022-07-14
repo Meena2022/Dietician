@@ -2,144 +2,95 @@ import pytest
 import requests
 import csv
 import json
+from base import Config_Base as config
 
-BASEURL = "http://127.0.0.1:5000/"
-MORBIDITY_URL = "{}Morbidity".format(BASEURL)
-MORBIDITYNAME_URL = "{}Morbidity/MorbidityName=Hypertension".format(BASEURL)
-MORBIDITYTESTID_URL = "{}Morbidity/MorbidityTestId=RHEU_CCF".format(BASEURL)
-MORBIDITYPUT_URL="{}Morbidity/MorbidityName={}&MorbidityTestId={}"
 
 #getrequest for all morbidities
 def test_1_get_allmorbidity():
-    print("Get All Morbidities")
-    payload = {}
-    headers = {}
-    response = requests.request("GET", MORBIDITY_URL, headers=headers, data=payload)
-    responsebody=response.json()
-    print("Get Request for Morbidity Successfully Pass")
-    assert response.url,"http://127.0.0.1:5000/Morbidity"
-    assert response.content,"application/json"
-    assert response.status_code, 200
+    #print("Get All Morbidities")
+    response = requests.request("GET", config.MORBIDITY_ENDPOINT)
+    responsebody = response.json()
+    assert response.url == "http://127.0.0.1:5000/Morbidity/"
+    assert response.status_code == 200
+    assert response.content , "application/json"
     assert ("MorbidityName" in responsebody["Items"][0].keys()),True
     assert ("MorbidityTestName" in responsebody["Items"][0].keys()),True
     assert ("MorbidityMarkerRef" in responsebody["Items"][0].keys()),True
     assert ("MorbidityTestUnit" in responsebody["Items"][0].keys()),True
     assert ("MorbidityTestId" in responsebody["Items"][0].keys()),True
-    print(response.status_code)
+
 
 #getrequest for a morbidityname
-def test_2_get_morbidityname():
-    print("Get Morbidity by Morbidity Name")
-    payload = {}
-    headers = {}
-    response = requests.request("GET", MORBIDITYNAME_URL, headers=headers, data=payload)
+@pytest.mark.parametrize("morbidityname,result",[('Hypothyroidism',200),('Pre Diabetes',200)])
+def test_2_get_morbidityname(morbidityname,result):
+    endpoint = config.MORBIDITY_NAME_ENDPOINT.format(morbidityname)
+    response = requests.request("GET", endpoint)
     responsebody = response.json()
-    print("Get Request for MorbidityName Successfully Pass")
-    #print(response.url)
-    assert response.url == "http://127.0.0.1:5000/Morbidity/MorbidityName=Hypertension"
-    assert response.content, "application/json"
-    assert response.status_code, 200
+    assert response.url.__contains__("http://127.0.0.1:5000/Morbidity/MorbidityName="),True
+    assert response.content , "application/json"
+    assert response.status_code == result
     assert ("MorbidityName" in responsebody["Items"][0].keys()), True
-    assert response.text.__contains__("Hypertension"),True
-    print(responsebody["Items"][0].keys())
-    print(response.status_code)
-    print(response.text)
+    assert response.text.__contains__(morbidityname),True
+
 
 #getrequest for a morbiditytestid
-def test_3_get_morbiditytestid():
-    print("Get Morbidity by MorbidityTestId")
-    payload = {}
-    headers = {}
-    response = requests.request("GET", MORBIDITYTESTID_URL, headers=headers, data=payload)
+@pytest.mark.parametrize("testid,result",[('DIA1_BG',200),('RHEU_CCF',200)])
+def test_3_get_morbiditytestid(testid,result):
+    endpoint = config.MORBIDITY_TESTID_ENDPOINT.format(testid)
+    response = requests.request("GET", endpoint)
     responsebody = response.json()
-    print("Get Request for MorbidityTestID Successfully Pass")
-    #print(response.url)
-    assert response.url=="http://127.0.0.1:5000/Morbidity/MorbidityTestId=RHEU_CCF"
+    assert response.url.__contains__("http://127.0.0.1:5000/Morbidity/MorbidityTestId="), True
     assert response.content, "application/json"
-    assert response.status_code, 200
+    assert response.status_code, result
     assert ("MorbidityName" in responsebody["Items"][0].keys()), True
     assert ("MorbidityTestName" in responsebody["Items"][0].keys()), True
     assert ("MorbidityMarkerRef" in responsebody["Items"][0].keys()), True
     assert ("MorbidityTestId" in responsebody["Items"][0].keys()), True
-    assert response.text.__contains__("RHEU_CCF"), True
-    print(responsebody["Items"][0].keys())
-    print(response.status_code)
-    print(response.text)
+    assert response.text.__contains__(testid), True
+
 
 # Add New Morbidity by Post Method
 def test_4_post_morbidity():
     print("Post Method for Morbidity by MorbidityName")
-    csv_list = []
-    key_list = ['MorbidityTestName','MorbidityTestUnit','MorbidityMarkerRef','MorbidityName']
-    with open("C:/Sunandha/GITdata/Dietician/test/testfiles/postmorbiditydetails.txt") as csvfile:
-        csvReader = csv.reader(csvfile, delimiter='=')
-        for row in csvReader:
-            csv_list.append(row)
-    print(csv_list)
-    #print("Convert cvs list into list of dict")
-    Morbidity_list = []
-    for item in enumerate(csv_list):
-        d = ({k: v for k, v in zip(key_list, item[1])})
-        Morbidity_list.append(d)
+    csv_list = config.read_cvs("testfiles/postmorbiditydetails.txt")
+    Morbidity_list = config.convert_csv_dict(config.MORBIDITY_POST_KEYS,csv_list)
     for item in enumerate(Morbidity_list):
-        print (item)
-        payload = json.dumps(item[1])
+        morbidity_data = item[1]
+        payload = json.dumps(morbidity_data)
         headers = {
             'Content-Type': 'application/json'
         }
-        #response=requests.post(,data=payload,headers=headers)
-        response = requests.request("POST", MORBIDITY_URL, headers=headers, data=payload)
-        print(response.content)
-        print(response.status_code)
-        #print(respnse.text)
-        print(response.text.__contains__("Morbidity successful created."))
+        response = requests.request("POST", config.MORBIDITY_ENDPOINT, headers=headers, data=payload)
+        assert response.content, "application/json"
+        assert response.status_code == 200
+        assert response.text.__contains__("Morbidity successful created.")
 
 #Update Morbidity by Put Method
 def test_5_put_morbidity():
-       print("Put Method for Morbidity")
-       csv_list = []
-       key_list = ['MorbidityTestUnit', 'MorbidityMarkerRef']
-       #print("Read from csv file and  create as  list")
-       with open("C:/Sunandha/GITdata/Dietician/test/testfiles/putmorbiditydetails.txt") as csvfile:
-            csvReader = csv.reader(csvfile, delimiter='=')
-            for row in csvReader:
-                csv_list.append(row)
-       #print(csv_list)
-       d = {}
-       for item in enumerate(csv_list):
-           #print(item)
-           temp_d = {}
-           d = ({k: v for k, v in zip(key_list, item[1])})
-           jsonbody= d
-           morbidityname=item[1][2]
-           morbiditytestid=item[1][3]
-           #print(jsonbody, item[1][2], item[1][3])
-           payload = json.dumps(jsonbody)
-           headers = {
-                'Content-Type': 'application/json'
-           }
-           MPUTURL = MORBIDITYPUT_URL.format(BASEURL,morbidityname,morbiditytestid)
-           response = requests.request("PUT", MPUTURL, headers=headers, data=payload)
-           print(response.content)
-           print(response.status_code)
-           assert(response.text.__contains__("Successfully Updated."))
+    print("Put Method for Morbidity")
+    csv_list = config.read_cvs("testfiles/putmorbiditydetails.txt")
+    for item in enumerate(csv_list):
+        morbidity_data = ({k: v for k, v in zip(config.MORBIDITY_PUT_KEYS, item[1])})
+        morbidityname=item[1][2]
+        morbiditytestid=item[1][3]
+        payload = json.dumps(morbidity_data)
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        endpoint = config.MORBIDITY_PUT_ENDPOINT.format(morbidityname,morbiditytestid)
+        response = requests.request("PUT", endpoint , headers=headers, data=payload)
+        assert response.content, "application/json"
+        assert response.status_code == 200
+        assert response.text.__contains__("Successfully Updated.")
 
 # delete Morbidity
-def test_5_delete_morbidity():
+@pytest.mark.parametrize("morbidityname,testid,result",[('dabcHypothyroidism','DAB_1AT',200),('dabcHypothyroidism','DAB_10A',200)])
+def test_5_delete_morbidity(morbidityname,testid,result):
     print("Delete Method for Morbidity")
-    csv_list = []
-    with open("C:/Sunandha/GITdata/Dietician/test/testfiles/deletemorbiditydetails.txt") as csvfile:
-        csvReader = csv.reader(csvfile, delimiter='=')
-        for row in csvReader:
-            csv_list.append(row)
-    #print(csv_list)
-    for item in enumerate(csv_list):
-        #print(item)
-        morbidityname = item[1][0]
-        morbiditytestid = item[1][1]
-        # print(jsonbody, item[1][2], item[1][3])
-        MDELURL = MORBIDITYPUT_URL.format(BASEURL, morbidityname, morbiditytestid)
-        response = requests.request("DELETE",MDELURL)
-        print(response.content)
-        print(response.status_code)
-        assert (response.text.__contains__("Successfully Deleted"))
+    endpoint = config.MORBIDITY_DEL_ENDPOINT.format(morbidityname, testid)
+    response = requests.request("DELETE",endpoint)
+    assert response.content, "application/json"
+    assert response.status_code, result
+    assert (response.text.__contains__("Successfully Deleted"))
+
+

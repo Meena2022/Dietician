@@ -39,7 +39,7 @@ class UsersApi(Resource):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_all('InfoType', 'User', projectionexp)
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-            if 'Items' in response:
+            if 'Items' in response and response['Count'] > 0:
                 return {'Items': response['Items']}
             return {'Message': 'Items not found!'}
         return {
@@ -136,12 +136,13 @@ class UserFirstNameAPI(Resource):
     def get(self,FirstName):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_attr_that_contains_value('FirstName', FirstName, projectionexp)
-        if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
-            if ('Items' in response):
-                return response
-            return {'msg': 'Item not found!'}
+        print(response)
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            if 'Items' in response and response['Count'] > 0:
+                return {'Items': response['Items']}
+            return {'Message': 'Item not found!'}
         return {
-            'msg': 'error occurred',
+            'Message': 'error occurred',
             'response': response
         }
 
@@ -151,9 +152,9 @@ class UserEmailAPI(Resource):
     def get(self,Email):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_attr_that_contains_value('Email', Email, projectionexp)
-        if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
-            if ('Items' in response):
-                return response
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            if 'Items' in response and response['Count'] > 0:
+                return {'Items': response['Items']}
             return {'msg': 'Item not found!'}
         return {
             'msg': 'error occurred',
@@ -166,9 +167,9 @@ class UserContactAPI(Resource):
     def get(self,Contact):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_attr_that_contains_value('Contact', Contact, projectionexp)
-        if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
-            if ('Items' in response):
-                return response
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            if 'Items' in response and response['Count'] > 0:
+                return {'Items': response['Items']}
             return {'msg': 'Item not found!'}
         return {
             'msg': 'error occurred',
@@ -181,9 +182,9 @@ class UserTypeAPI(Resource):
     def get(self,UserType):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_attr_that_contains_value('UserType', UserType, projectionexp)
-        if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
-            if ('Items' in response):
-                return response
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            if 'Items' in response and response['Count'] > 0:
+                return {'Items': response['Items']}
             return {'msg': 'Item not found!'}
         return {
             'msg': 'error occurred',
@@ -196,9 +197,9 @@ class UserDieticianIdAPI(Resource):
     def get(self, DieticianId):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_all('DieticianId', DieticianId, projectionexp)
-        if (response['ResponseMetadata']['HTTPStatusCode'] == 200):
-            if ('Items' in response):
-                return response
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            if 'Items' in response and response['Count'] > 0:
+                return {'Items': response['Items']}
             return {'msg': 'Item not found!'}
         return {
             'msg': 'error occurred',
