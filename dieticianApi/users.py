@@ -142,7 +142,6 @@ class UserFirstNameAPI(Resource):
     def get(self,FirstName):
         projectionexp = 'UserId, FirstName, LastName, Address, Contact, Email, FoodCategory, Allergy'
         response = dynamodb.read_attr_that_contains_value('FirstName', FirstName, projectionexp)
-        print(response)
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
             if 'Items' in response and response['Count'] > 0:
                 return {'Items': response['Items']}
