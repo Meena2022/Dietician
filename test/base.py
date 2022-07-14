@@ -4,6 +4,8 @@ import csv
 class ConfigBase:
 
     BASEURL = "http://127.0.0.1:5000/api/"
+    AUTH_USER ='KMSASM2022'
+    AUTH_PWD ='Dietician1!'
 
     MORBIDITY_POST_KEYS = ['MorbidityTestName', 'MorbidityTestUnit', 'MorbidityMarkerRef', 'MorbidityName']
     MORBIDITY_PUT_KEYS = ['MorbidityTestUnit', 'MorbidityMarkerRef']
