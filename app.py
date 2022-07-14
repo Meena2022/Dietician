@@ -60,9 +60,7 @@ def logout():
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
-    if '_user_id' in flask.session:
-        return flask.redirect('/api')
-    elif flask.request.method == 'POST':
+    if flask.request.method == 'POST':
         form_data = flask.request.form
         user = DieticianUser().set(form_data['user_id'], form_data['password'])
         if user is not None:
