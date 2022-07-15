@@ -31,8 +31,14 @@ PyCharm: - This is the Python IDE. Install the community version from https://ww
  
 4)	Install the requirement.txt file using below command
     pip install -r requirements.txt
+    
+5) Create a new File in Dietician folder with the name config.py with the below details:
+    AWS_ACCESS_KEY_ID = 'your access key'
+    AWS_SECRET_ACCESS_KEY = 'your secret access key'
+    REGION_NAME = 'your-region'
+    ENDPOINT_URL = 'http://localhost:8000'
 
-5)	Start the server with below command 
+6)	Start the server with below command 
     flask run
     server starts on this port
     http://127.0.0.1:5000/
