@@ -66,8 +66,8 @@ def login():
         if user is not None:
             login_user(user)
             flask.flash('Logged in successfully.')
-            next = flask.request.args.get('next')
-            return flask.redirect(next or '/api')
+            nextpage = flask.request.args.get('next')
+            return flask.redirect(nextpage or '/api')
         return flask.render_template('login.html')
     return flask.render_template('login.html')
 
