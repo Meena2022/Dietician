@@ -1,4 +1,4 @@
 
-Patient=MTony=Sparrow=987654999=jack@ghmai.com=Nut,Milk=Vegetarian=DT001=12 E=WhiteBeach=Bay area=Fl=SA=none=none
-Patient=NDevi=Jr=987657894=jamie@ghmai.com=Milk=Vegetarian=DT002=1 E=BlackBeach=Bay area=CA=SA=none=none
-Patient=OVeena=Ram=98765988=kamal@ghmai.com=None=Vegetarian=DT003=102 E=Beachraod=Bay=TN=SA=none=no
+Patient=SMTony=DSparrow=987654888=sjack@ghmai.com=Nut,Milk=Vegetarian=DT001=12 E=SWhiteBeach=Bay area=Fl=SA=none=none
+Patient=SNDevi=DJr=987657678=sjamie@ghmai.com=Milk=Vegetarian=DT002=1 E=SBlackBeach=Bay area=CA=SA=none=none
+Patient=SOVeena=DRam=98765898=fkamal@ghmai.com=None=Vegetarian=DT003=102 E=DBeachraod=Bay=TN=SA=none=none

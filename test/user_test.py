@@ -76,9 +76,9 @@ def test_7_post_user():
         }
         response = requests.request("POST", endpoint, headers=headers, data=payload
                                     , auth=(config.AUTH_USER, config.AUTH_PWD))
-        response = requests.request("GET", endpoint)
+        #response = requests.request("GET", endpoint)
         assert response.status_code == 200
-        assert response.content , "application/json"
+        assert response.content, "application/json"
 
 
 def test_8_put_user():
